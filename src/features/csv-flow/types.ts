@@ -6,6 +6,7 @@ export enum StepItems {
 
 export interface FieldConfig {
   fieldName: string; // The field name to map to (e.g., "Name", "Email")
+  displayName?: string;
   required: boolean; // Whether the field is mandatory
   type: "string" | "number" | "email" | "date"; // Type of the field
   validations?: Validation[];
@@ -56,3 +57,15 @@ export type InfoWithSource = Info & {
 export type Meta = { __index: string; __errors?: Error | null };
 export type Error = { [key: string]: InfoWithSource };
 export type Errors = { [id: string]: Error };
+
+export enum FieldStatus {
+  Unmapped = "Unmapped",
+  Custom = "Custom",
+  Mapped = "Mapped",
+  Ignored = "Ignored",
+}
+
+export type FieldMappingItem = { id: string; csvValue: string } & (
+  | { status: FieldStatus.Custom | FieldStatus.Mapped; mappedValue: string }
+  | { status: FieldStatus.Unmapped | FieldStatus.Ignored }
+);

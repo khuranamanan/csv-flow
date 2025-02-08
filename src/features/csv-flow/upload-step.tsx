@@ -11,30 +11,39 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { parseCsv } from "@/lib/csv-parse";
-import { Check } from "lucide-react";
+import { Check, Loader } from "lucide-react";
 import { useState } from "react";
 import { FieldConfig, StepItems } from "./types";
+import { toast } from "sonner";
+import { FlowSteps } from ".";
 
-type Props = {
+interface Props {
   fields: FieldConfig[];
   maxRows: number;
-  setStep: (step: StepItems) => void;
-};
+  setStep: React.Dispatch<React.SetStateAction<FlowSteps>>;
+}
 
 function UploadStep(props: Props) {
   const { fields, maxRows, setStep } = props;
+  const [processing, setProcessing] = useState(false);
 
   const [files, setFiles] = useState<File[]>([]);
 
   async function onNextStepClick() {
+    setProcessing(true);
     try {
       const parsedResult = await parseCsv({ file: files[0], limit: maxRows });
-
+      // await new Promise<void>((resolve) => setTimeout(resolve, 10000));
+      toast.success("CSV parsed successfully!");
       console.log(parsedResult);
-      setStep(StepItems.Map);
+      setStep({
+        step: StepItems.Map,
+        ...parsedResult,
+      });
     } catch (error) {
-      //   toast(error);
-      console.log("error in parsing", error);
+      toast.error(error instanceof Error ? error.message : "Parsing failed.");
+    } finally {
+      setProcessing(false);
     }
   }
 
@@ -68,7 +77,7 @@ function UploadStep(props: Props) {
             <TableBody>
               {fields.map((field) => (
                 <TableRow key={field.fieldName}>
-                  <TableCell>{field.fieldName}</TableCell>
+                  <TableCell>{field.displayName || field.fieldName}</TableCell>
                   <TableCell>
                     {field.required ? <Check size={16} /> : null}
                   </TableCell>
@@ -80,7 +89,15 @@ function UploadStep(props: Props) {
       </div>
 
       <DialogFooter>
-        <Button onClick={onNextStepClick} disabled={files.length === 0}>
+        {processing && (
+          <p className="flex items-center gap-2 mr-4 text-sm text-muted-foreground">
+            <Loader className="size-4 animate-spin" /> Processing...
+          </p>
+        )}
+        <Button
+          onClick={onNextStepClick}
+          disabled={files.length === 0 || processing}
+        >
           Next
         </Button>
       </DialogFooter>

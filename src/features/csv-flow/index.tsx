@@ -9,6 +9,20 @@ import { useState } from "react";
 import StepIndicator from "./step-indicator";
 import { FieldConfig, StepItems } from "./types";
 import UploadStep from "./upload-step";
+import MapStep from "./map-step";
+
+export type FlowSteps =
+  | {
+      step: StepItems.Upload;
+    }
+  | {
+      step: StepItems.Map;
+      data: Record<string, string>[];
+      columns: string[];
+    }
+  | {
+      step: StepItems.Review;
+    };
 
 interface Props {
   open: boolean;
@@ -20,16 +34,28 @@ interface Props {
 function CsvFlow(props: Props) {
   const { open, setOpen, fields, maxRows = 1000 } = props;
 
-  const [step, setStep] = useState<StepItems>(StepItems.Upload);
+  const [currentStep, setCurrentStep] = useState<FlowSteps>({
+    step: StepItems.Upload,
+  });
 
   const renderStep = () => {
-    switch (step) {
+    switch (currentStep.step) {
       case StepItems.Upload:
         return (
-          <UploadStep fields={fields} maxRows={maxRows} setStep={setStep} />
+          <UploadStep
+            fields={fields}
+            maxRows={maxRows}
+            setStep={setCurrentStep}
+          />
         );
       case StepItems.Map:
-        return <></>;
+        return (
+          <MapStep
+            fields={fields}
+            data={currentStep.data}
+            columns={currentStep.columns}
+          />
+        );
 
       case StepItems.Review:
         return <></>;
@@ -39,7 +65,15 @@ function CsvFlow(props: Props) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        if (!isOpen) {
+          setCurrentStep({ step: StepItems.Upload });
+        }
+      }}
+    >
       <DialogTrigger asChild>
         <Button variant="outline">Upload files</Button>
       </DialogTrigger>
@@ -50,19 +84,19 @@ function CsvFlow(props: Props) {
               number={1}
               text="Upload a CSV file"
               description="Upload a CSV file to get started"
-              active={step === StepItems.Upload}
+              active={currentStep.step === StepItems.Upload}
             />
             <StepIndicator
               number={2}
               text="Map fields"
               description="Map fields to the corresponding columns"
-              active={step === StepItems.Map}
+              active={currentStep.step === StepItems.Map}
             />
             <StepIndicator
               number={3}
               text="Review data"
               description="Review the data before importing"
-              active={step === StepItems.Review}
+              active={currentStep.step === StepItems.Review}
             />
           </div>
         </DialogHeader>

@@ -16,6 +16,7 @@ export async function parseCsv(
     const parsedData: Record<string, string>[] = [];
     let columns: string[] = [];
     let rowCount = 0;
+    let abortedDueToLimit = false;
 
     Papa.parse<Record<string, string>>(file, {
       ...config,
@@ -35,14 +36,21 @@ export async function parseCsv(
           parsedData.push(results.data);
           rowCount++;
         } else {
+          // Mark that we exceeded the row limit and abort the parsing.
+          abortedDueToLimit = true;
           parser.abort();
-          console.log("LIMIT EXCEEDED", limit, rowCount);
-          reject(new Error(`Row limit exceeded: Only ${limit} rows allowed.`));
         }
       },
       complete: () => {
-        console.log("Parsing complete");
-        resolve({ data: parsedData, columns });
+        if (abortedDueToLimit) {
+          reject(
+            new Error(
+              `🚨 Row limit exceeded: Please upload a CSV file with a maximum of ${limit} rows.`
+            )
+          );
+        } else {
+          resolve({ data: parsedData, columns });
+        }
       },
       error: (error) => reject(new Error(`Parsing failed: ${error.message}`)),
     });
@@ -70,6 +78,7 @@ export async function parseCsv(
         })
         .filter(Boolean) as string[];
 
+      // Replace the first row with the processed columns.
       rows[0] = processedColumns;
       return {
         updatedChunk: Papa.unparse(rows),
