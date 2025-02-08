@@ -3,6 +3,7 @@ import { ThemeSwitch } from "./components/theme-switch";
 import CsvFlow from "./features/csv-flow";
 import { FieldConfig } from "./features/csv-flow/types";
 import { Toaster } from "sonner";
+import { Button } from "./components/ui/button";
 
 const csvFlowFieldsConfig: FieldConfig[] = [
   {
@@ -47,17 +48,23 @@ function App() {
   return (
     <>
       <div className="relative flex items-center justify-center min-h-dvh">
-        <CsvFlow
-          open={open}
-          setOpen={setOpen}
-          fields={csvFlowFieldsConfig}
-          maxRows={500}
-        />
+        <Button variant="outline" onClick={() => setOpen(true)}>
+          Upload files
+        </Button>
+
         <div className="absolute bottom-4 left-4">
           <ThemeSwitch />
         </div>
       </div>
+
       <Toaster />
+
+      <CsvFlow
+        open={open}
+        setOpen={setOpen}
+        fields={csvFlowFieldsConfig}
+        maxRows={500}
+      />
     </>
   );
 }

@@ -1,15 +1,9 @@
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { useState } from "react";
+import MapStep from "./map-step";
 import StepIndicator from "./step-indicator";
 import { FieldConfig, StepItems } from "./types";
 import UploadStep from "./upload-step";
-import MapStep from "./map-step";
 
 export type FlowSteps =
   | {
@@ -74,9 +68,6 @@ function CsvFlow(props: Props) {
         }
       }}
     >
-      <DialogTrigger asChild>
-        <Button variant="outline">Upload files</Button>
-      </DialogTrigger>
       <DialogContent className="h-[90vh] w-[90vw] max-w-[90vw] flex flex-col">
         <DialogHeader className="pb-6 border-b">
           <div className="flex space-x-4">
