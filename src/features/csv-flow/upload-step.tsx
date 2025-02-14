@@ -11,20 +11,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { parseCsv } from "@/lib/csv-parse";
+import { formatBytes } from "@/lib/utils";
 import { Check, Loader } from "lucide-react";
 import { useState } from "react";
-import { FieldConfig, StepItems } from "./types";
 import { toast } from "sonner";
 import { FlowSteps } from ".";
+import { FieldConfig, StepItems } from "./types";
 
 interface Props {
   fields: FieldConfig[];
   maxRows: number;
   setStep: React.Dispatch<React.SetStateAction<FlowSteps>>;
+  maxFileSize: number;
 }
 
 function UploadStep(props: Props) {
-  const { fields, maxRows, setStep } = props;
+  const { fields, maxRows, setStep, maxFileSize } = props;
   const [processing, setProcessing] = useState(false);
 
   const [files, setFiles] = useState<File[]>([]);
@@ -53,7 +55,7 @@ function UploadStep(props: Props) {
         <div className="h-full col-span-2">
           <FileUploader
             maxFileCount={1}
-            maxSize={8 * 1024 * 1024}
+            maxSize={maxFileSize}
             onValueChange={setFiles}
             containerClassName="h-full"
             className="flex-1"
@@ -64,7 +66,7 @@ function UploadStep(props: Props) {
         </div>
         <div>
           <p className="p-2 text-sm text-center rounded-lg text-muted-foreground bg-muted">
-            Max file size: 8MB, Max rows: {maxRows}
+            Max file size: {formatBytes(maxFileSize)}, Max rows: {maxRows}
           </p>
           <Separator className="my-2" />
           <Table>

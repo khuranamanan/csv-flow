@@ -28,11 +28,18 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 // --- Types from your codebase ---
-import { FieldConfig, FieldMappingItem, FieldStatus, Meta } from "./types";
+import {
+  FieldConfig,
+  FieldMappingItem,
+  FieldStatus,
+  Meta,
+  StepItems,
+} from "./types";
 import { addErrorsToData, mapCsvRow } from "@/lib/map-utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
 import { Loader } from "lucide-react";
+import { FlowSteps } from ".";
 
 /**
  * Transforms CSV data by mapping each row using the field mappings,
@@ -41,7 +48,7 @@ import { Loader } from "lucide-react";
 async function mapData(
   fieldMappings: FieldMappingItem[],
   fields: FieldConfig[],
-  data: Record<string, string>[]
+  data: Record<string, unknown>[]
 ): Promise<(Record<string, string> & Meta)[]> {
   try {
     // Map each CSV row
@@ -57,20 +64,28 @@ async function mapData(
 
 interface MapStepProps {
   fields: FieldConfig[];
-  data: Record<string, string>[];
+  data: Record<string, unknown>[];
   columns: string[];
-  // setStep prop omitted for brevity – you can add it if you need to transition to a review step.
+  setStep: React.Dispatch<React.SetStateAction<FlowSteps>>;
 }
 
 const mappingSchema = z.object({
   mappings: z.record(z.string()),
 });
 
-function MapStep({ fields, data, columns }: MapStepProps) {
+function MapStep({ fields, data, columns, setStep }: MapStepProps) {
   const [processing, setProcessing] = useState(false);
+
+  const defaultValues = {
+    mappings: columns.reduce((acc, col) => {
+      acc[col] = "IGNORE_FIELD";
+      return acc;
+    }, {} as Record<string, string>),
+  };
 
   const form = useForm<z.infer<typeof mappingSchema>>({
     resolver: zodResolver(mappingSchema),
+    defaultValues,
   });
 
   const fieldOptions = fields.map((field) => ({
@@ -99,6 +114,7 @@ function MapStep({ fields, data, columns }: MapStepProps) {
           .map((f) => f.displayName || f.fieldName)
           .join(", ")}`
       );
+      setProcessing(false);
       return;
     }
 
@@ -127,9 +143,14 @@ function MapStep({ fields, data, columns }: MapStepProps) {
 
     try {
       const mappedData = await mapData(fieldMappings, fields, data);
-      await new Promise<void>((resolve) => setTimeout(resolve, 10000));
+      // await new Promise<void>((resolve) => setTimeout(resolve, 10000));
       toast.success("Data mapped and validated successfully!");
       console.log("Mapped Data:", mappedData);
+      setStep({
+        step: StepItems.Review,
+        data: mappedData,
+        fieldMappings,
+      });
     } catch (error) {
       toast.error("Error mapping data: " + (error as Error)?.message);
     } finally {

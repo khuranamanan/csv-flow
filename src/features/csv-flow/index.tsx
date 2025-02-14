@@ -1,8 +1,9 @@
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { useState } from "react";
 import MapStep from "./map-step";
+import ReviewStep from "./review-step";
 import StepIndicator from "./step-indicator";
-import { FieldConfig, StepItems } from "./types";
+import { FieldConfig, FieldMappingItem, Meta, StepItems } from "./types";
 import UploadStep from "./upload-step";
 
 export type FlowSteps =
@@ -11,22 +12,80 @@ export type FlowSteps =
     }
   | {
       step: StepItems.Map;
-      data: Record<string, string>[];
+      data: Record<string, unknown>[];
       columns: string[];
     }
   | {
       step: StepItems.Review;
+      data: (Record<string, unknown> & Meta)[];
+      fieldMappings: FieldMappingItem[];
     };
 
-interface Props {
+/**
+ * Props for the CSV Flow component.
+ *
+ * @interface CsvFlowProps
+ *
+ * @property {boolean} open - Indicates whether the CSV flow dialog is open.
+ * @property {(v: boolean) => void} setOpen - Callback function to update the open state.
+ * @property {FieldConfig[]} fields - An array of field configuration objects used to map CSV columns.
+ * Each object should include:
+ *   - **fieldName**: The internal name of the field (e.g., "Name", "Email").
+ *   - **displayName** (optional): A user-friendly name for the field. If omitted, `fieldName` is used.
+ *   - **required**: A boolean indicating whether the field is mandatory.
+ *   - **type**: The expected data type for the field. One of "string", "number", "email", or "date".
+ *   - **validations** (optional): An array of validations to apply. Validations can be of the following types:
+ *     - **RequiredValidation**: `{ rule: "required", errorMessage?: string, level?: "info" | "warning" | "error" }`
+ *     - **UniqueValidation**: `{ rule: "unique", allowEmpty?: boolean, errorMessage?: string, level?: "info" | "warning" | "error" }`
+ *     - **RegexValidation**: `{ rule: "regex", value: string, flags?: string, errorMessage: string, level?: "info" | "warning" | "error" }`
+ *
+ *  **Error Levels:** Default "error".
+ *   - **"error"**: A critical validation error that must be resolved before import can proceed.
+ *   - **"warning"** or **"info"**: These indicate less critical issues that are only informational and
+ *     will not block the import.
+ *
+ * @property {number} - Optional. Maximum number of data rows to process. Defaults to 1000.
+ * @property {number | undefined} - Optional. Maximum allowed file size (in bytes)
+ * for the CSV file uploader. Defaults to 2MB.
+ *
+ * @example
+ * import { useState } from "react";
+ * import CsvFlow from "./features/csv-flow";
+ * import { someFieldConfigs } from "./field-configurations";
+ *
+ * function App() {
+ *   const [open, setOpen] = useState(false);
+ *
+ *   return (
+ *     <>
+ *       <button onClick={() => setOpen(true)}>Open CSV Flow</button>
+ *       <CsvFlow
+ *         open={open}
+ *         setOpen={setOpen}
+ *         fields={someFieldConfigs}
+ *         maxRows={500}         // Optional: override default max rows (default is 1000)
+ *         maxFileSize={1024 * 1024} // Optional: override default max file size (default is 2MB)
+ *       />
+ *     </>
+ *   );
+ * }
+ */
+interface CsvFlowProps {
   open: boolean;
   setOpen: (v: boolean) => void;
   fields: FieldConfig[];
   maxRows?: number;
+  maxFileSize?: number;
 }
 
-function CsvFlow(props: Props) {
-  const { open, setOpen, fields, maxRows = 1000 } = props;
+function CsvFlow(props: CsvFlowProps) {
+  const {
+    open,
+    setOpen,
+    fields,
+    maxRows = 1000,
+    maxFileSize = 1024 * 1024 * 2,
+  } = props;
 
   const [currentStep, setCurrentStep] = useState<FlowSteps>({
     step: StepItems.Upload,
@@ -40,6 +99,7 @@ function CsvFlow(props: Props) {
             fields={fields}
             maxRows={maxRows}
             setStep={setCurrentStep}
+            maxFileSize={maxFileSize}
           />
         );
       case StepItems.Map:
@@ -48,11 +108,19 @@ function CsvFlow(props: Props) {
             fields={fields}
             data={currentStep.data}
             columns={currentStep.columns}
+            setStep={setCurrentStep}
           />
         );
 
       case StepItems.Review:
-        return <></>;
+        return (
+          <ReviewStep
+            data={currentStep.data}
+            fields={fields}
+            fieldMappings={currentStep.fieldMappings}
+            setStep={setCurrentStep}
+          />
+        );
       default:
         return null;
     }
@@ -68,7 +136,12 @@ function CsvFlow(props: Props) {
         }
       }}
     >
-      <DialogContent className="h-[90vh] w-[90vw] max-w-[90vw] flex flex-col">
+      <DialogContent
+        className="h-[90vh] w-[90vw] max-w-[90vw] flex flex-col"
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
+      >
         <DialogHeader className="pb-6 border-b">
           <div className="flex space-x-4">
             <StepIndicator

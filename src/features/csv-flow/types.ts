@@ -4,6 +4,32 @@ export enum StepItems {
   Review = "Review",
 }
 
+/**
+ * Configuration for a single field in the CSV.
+ *
+ * @interface FieldConfig
+ * @property {string} fieldName - The internal field name used for mapping (e.g., "Name", "Email").
+ * @property {string} [displayName] - An optional human-friendly name for display purposes. If not provided, `fieldName` is used.
+ * @property {boolean} required - Indicates whether the field is mandatory.
+ * @property {"string" | "number" | "email" | "date"} type - The expected data type for the field.
+ * @property {Validation[]} [validations] - An array of additional validations to apply to this field.
+ *
+ * @example
+ * const fieldConfig: FieldConfig = {
+ *   fieldName: "email",
+ *   displayName: "Email Address",
+ *   required: true,
+ *   type: "email",
+ *   validations: [
+ *     {
+ *       rule: "regex",
+ *       value: "^[\\w.-]+@[\\w.-]+\\.\\w+$",
+ *       errorMessage: "Invalid email format",
+ *       level: "error"
+ *     }
+ *   ]
+ * };
+ */
 export interface FieldConfig {
   fieldName: string; // The field name to map to (e.g., "Name", "Email")
   displayName?: string;
@@ -12,17 +38,39 @@ export interface FieldConfig {
   validations?: Validation[];
 }
 
+/**
+ * A union type representing the various kinds of field validations.
+ *
+ * @typedef {RequiredValidation | UniqueValidation | RegexValidation} Validation
+ */
 export type Validation =
   | RequiredValidation
   | UniqueValidation
   | RegexValidation;
 
+/**
+ * Validation for required fields.
+ *
+ * @typedef {Object} RequiredValidation
+ * @property {"required"} rule - The rule identifier.
+ * @property {string} [errorMessage] - Optional custom error message if the field is missing.
+ * @property {ErrorLevel} [level] - The severity level of the error.
+ */
 export type RequiredValidation = {
   rule: "required";
   errorMessage?: string;
   level?: ErrorLevel;
 };
 
+/**
+ * Validation to ensure a field's value is unique across the dataset.
+ *
+ * @typedef {Object} UniqueValidation
+ * @property {"unique"} rule - The rule identifier.
+ * @property {boolean} [allowEmpty] - If true, empty values will be ignored in the uniqueness check.
+ * @property {string} [errorMessage] - Optional custom error message.
+ * @property {ErrorLevel} [level] - The severity level of the error.
+ */
 export type UniqueValidation = {
   rule: "unique";
   allowEmpty?: boolean;
@@ -30,6 +78,16 @@ export type UniqueValidation = {
   level?: ErrorLevel;
 };
 
+/**
+ * Validation using a regular expression.
+ *
+ * @typedef {Object} RegexValidation
+ * @property {"regex"} rule - The rule identifier.
+ * @property {string} value - The regular expression pattern to test against.
+ * @property {string} [flags] - Optional regex flags (e.g., "i" for case-insensitive).
+ * @property {string} errorMessage - The error message to display if validation fails.
+ * @property {ErrorLevel} [level] - The severity level of the error.
+ */
 export type RegexValidation = {
   rule: "regex";
   value: string;
@@ -38,6 +96,11 @@ export type RegexValidation = {
   level?: ErrorLevel;
 };
 
+/**
+ * The severity level for a validation error.
+ *
+ * @typedef {"info" | "warning" | "error"} ErrorLevel
+ */
 export type ErrorLevel = "info" | "warning" | "error";
 
 export type Info = {

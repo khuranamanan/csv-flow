@@ -9,19 +9,19 @@ export interface ParseCsvArgs {
 
 export async function parseCsv(
   args: ParseCsvArgs
-): Promise<{ data: Record<string, string>[]; columns: string[] }> {
+): Promise<{ data: Record<string, unknown>[]; columns: string[] }> {
   const { file, config = {}, limit, showEmptyFields = true } = args;
 
   return new Promise((resolve, reject) => {
-    const parsedData: Record<string, string>[] = [];
+    const parsedData: Record<string, unknown>[] = [];
     let columns: string[] = [];
     let rowCount = 0;
     let abortedDueToLimit = false;
 
-    Papa.parse<Record<string, string>>(file, {
+    Papa.parse<Record<string, unknown>>(file, {
       ...config,
       header: true,
-      dynamicTyping: false,
+      dynamicTyping: true,
       skipEmptyLines: true,
       beforeFirstChunk: (chunk) => {
         const { updatedChunk, extractedColumns } = processFirstChunk(

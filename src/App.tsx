@@ -7,6 +7,13 @@ import { Button } from "./components/ui/button";
 
 const csvFlowFieldsConfig: FieldConfig[] = [
   {
+    fieldName: "id",
+    displayName: "ID",
+    required: true,
+    type: "number",
+    // validations: [{ rule: "required" }],
+  },
+  {
     fieldName: "firstName",
     displayName: "First Name",
     required: true,
@@ -30,8 +37,9 @@ const csvFlowFieldsConfig: FieldConfig[] = [
   {
     fieldName: "Email",
     displayName: "Email",
-    required: false,
+    required: true,
     type: "email",
+    validations: [{ rule: "unique" }],
   },
   {
     fieldName: "Phone",
@@ -63,7 +71,7 @@ function App() {
         open={open}
         setOpen={setOpen}
         fields={csvFlowFieldsConfig}
-        maxRows={500}
+        maxRows={10000}
       />
     </>
   );
