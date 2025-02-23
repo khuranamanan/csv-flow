@@ -12,7 +12,7 @@ export type FlowSteps =
     }
   | {
       step: StepItems.Map;
-      data: Record<string, unknown>[];
+      data: Record<string, string>[];
       columns: string[];
     }
   | {
@@ -30,8 +30,8 @@ export type FlowSteps =
  * @property {(v: boolean) => void} setOpen - Callback function to update the open state.
  * @property {FieldConfig[]} fields - An array of field configuration objects used to map CSV columns.
  * Each object should include:
- *   - **fieldName**: The internal name of the field (e.g., "Name", "Email").
- *   - **displayName** (optional): A user-friendly name for the field. If omitted, `fieldName` is used.
+ *   - **columnName**: The internal name of the field (e.g., "Name", "Email").
+ *   - **displayName** (optional): A user-friendly name for the field. If omitted, `columnName` is used.
  *   - **required**: A boolean indicating whether the field is mandatory.
  *   - **type**: The expected data type for the field. One of "string", "number", "email", or "date".
  *   - **validations** (optional): An array of validations to apply. Validations can be of the following types:

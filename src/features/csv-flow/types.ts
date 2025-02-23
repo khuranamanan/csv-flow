@@ -8,15 +8,15 @@ export enum StepItems {
  * Configuration for a single field in the CSV.
  *
  * @interface FieldConfig
- * @property {string} fieldName - The internal field name used for mapping (e.g., "Name", "Email").
- * @property {string} [displayName] - An optional human-friendly name for display purposes. If not provided, `fieldName` is used.
+ * @property {string} columnName - The internal field name used for mapping (e.g., "Name", "Email").
+ * @property {string} [displayName] - An optional human-friendly name for display purposes. If not provided, `columnName` is used.
  * @property {boolean} required - Indicates whether the field is mandatory.
  * @property {"string" | "number" | "email" | "date"} type - The expected data type for the field.
  * @property {Validation[]} [validations] - An array of additional validations to apply to this field.
  *
  * @example
  * const fieldConfig: FieldConfig = {
- *   fieldName: "email",
+ *   columnName: "email",
  *   displayName: "Email Address",
  *   required: true,
  *   type: "email",
@@ -30,11 +30,14 @@ export enum StepItems {
  *   ]
  * };
  */
+
+export type FieldTypes = "string" | "number" | "boolean" | "email" | "date";
+
 export interface FieldConfig {
-  fieldName: string; // The field name to map to (e.g., "Name", "Email")
+  columnName: string; // The field name to map to (e.g., "Name", "Email")
   displayName?: string;
-  required: boolean; // Whether the field is mandatory
-  type: "string" | "number" | "email" | "date"; // Type of the field
+  columnRequired: boolean; // Whether the field is mandatory
+  type: FieldTypes;
   validations?: Validation[];
 }
 
@@ -46,7 +49,8 @@ export interface FieldConfig {
 export type Validation =
   | RequiredValidation
   | UniqueValidation
-  | RegexValidation;
+  | RegexValidation
+  | CustomValidation;
 
 /**
  * Validation for required fields.
@@ -96,6 +100,13 @@ export type RegexValidation = {
   level?: ErrorLevel;
 };
 
+export type CustomValidation = {
+  rule: "custom";
+  validate: (value: unknown, row: Record<string, unknown>) => boolean;
+  errorMessage: string;
+  level?: ErrorLevel;
+};
+
 /**
  * The severity level for a validation error.
  *
@@ -128,7 +139,18 @@ export enum FieldStatus {
   Ignored = "Ignored",
 }
 
-export type FieldMappingItem = { id: string; csvValue: string } & (
-  | { status: FieldStatus.Custom | FieldStatus.Mapped; mappedValue: string }
+export type FieldMappingItem = {
+  id: string;
+  csvValue: string;
+} & (
+  | {
+      status: FieldStatus.Mapped;
+      mappedValue: string;
+      type: FieldTypes;
+    }
+  | {
+      status: FieldStatus.Custom;
+      mappedValue: string;
+    }
   | { status: FieldStatus.Unmapped | FieldStatus.Ignored }
 );

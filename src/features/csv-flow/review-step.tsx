@@ -13,7 +13,13 @@ import {
 import { AgGridReact } from "ag-grid-react";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { FieldConfig, FieldMappingItem, FieldStatus, Meta } from "./types";
+import {
+  FieldConfig,
+  FieldMappingItem,
+  FieldStatus,
+  FieldTypes,
+  Meta,
+} from "./types";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Tooltip,
@@ -41,39 +47,58 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
   fieldMappings,
   // setStep,
 }) => {
-  // Initialize row data; ensure each row has a unique __index.
-  const [rowData, setRowData] = useState<(Record<string, unknown> & Meta)[]>(
-    // initialData.map((row) => ({
-    //   ...row,
-    //   __index: row.__index || nanoid(),
-    // }))
-    initialData
-  );
+  const [rowData, setRowData] =
+    useState<(Record<string, unknown> & Meta)[]>(initialData);
   const [filterErrors, setFilterErrors] = useState<CheckedState>(false);
   const gridApiRef = useRef<GridApi | null>(null);
 
-  // Re-run validations on updated data.
   const updateData = useCallback(
     async (updatedData: (Record<string, unknown> & Meta)[]) => {
-      const validatedData = await addErrorsToData(updatedData, fields);
+      const validatedData = await addErrorsToData(
+        updatedData,
+        fields,
+        fieldMappings
+      );
       setRowData(validatedData);
     },
-    [fields]
+    [fields, fieldMappings]
   );
 
-  // Build column definitions based on fieldMappings.
-  // Only include mappings with status Mapped or Custom.
+  const fieldTypeToAgGridType = (type: FieldTypes) => {
+    switch (type) {
+      case "string":
+      case "email":
+      case "date":
+        return "text";
+      case "number":
+        return "number";
+      case "boolean":
+        return "boolean";
+      default:
+        return false;
+    }
+  };
+
   const mappingColumns: ColDef[] = useMemo(() => {
     return fieldMappings.reduce<ColDef[]>((acc, mapping) => {
-      // Only include mappings that have a mappedValue property.
+      const cellType =
+        mapping.status === FieldStatus.Mapped
+          ? fieldTypeToAgGridType(mapping.type)
+          : false;
+
       if (
         mapping.status === FieldStatus.Mapped ||
         mapping.status === FieldStatus.Custom
       ) {
         acc.push({
-          headerName: mapping.mappedValue, // TS now knows mappedValue exists here
+          headerName: mapping.mappedValue,
           field: mapping.mappedValue,
+          cellDataType: cellType,
           editable: true,
+          cellEditor:
+            cellType === "boolean"
+              ? "agCheckboxCellEditor"
+              : "agTextCellEditor",
           cellRenderer: (params: any) => {
             const value = params.value;
             const errors = params.data.__errors;
@@ -109,10 +134,8 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
     }, []);
   }, [fieldMappings]);
 
-  // Compose the final column definitions.
   const columnDefs: ColDef[] = useMemo(() => mappingColumns, [mappingColumns]);
 
-  // When a cell is edited, update the corresponding row and re-run validations.
   const onCellValueChanged = useCallback(
     async (event: CellValueChangedEvent) => {
       const updatedRow = event.data;
@@ -124,10 +147,9 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
     [rowData, updateData]
   );
 
-  // Delete the rows that are currently selected.
   const deleteSelectedRows = useCallback(() => {
     if (!gridApiRef.current) return;
-    // Cast to RowNode<any>[] to satisfy types.
+
     const selectedNodes =
       gridApiRef.current.getSelectedNodes() as RowNode<any>[];
     const selectedIds = selectedNodes.map((node) => node.data.__index);
@@ -135,7 +157,6 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
     updateData(newData);
   }, [rowData, updateData]);
 
-  // Filter data if "filter errors" is enabled.
   const filteredData = useMemo(() => {
     if (!filterErrors) return rowData;
     return rowData.filter(
@@ -145,7 +166,6 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
     );
   }, [rowData, filterErrors]);
 
-  // On clicking Next, check for any errors.
   const onContinue = useCallback(() => {
     const hasErrors = rowData.some(
       (row) =>
@@ -160,8 +180,6 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
     }
     toast.success("Data validated successfully!");
     console.log("Final validated data:", rowData);
-    // Pass the validated data to the next step if needed.
-    // For example: setStep({ step: StepItems.Import, data: rowData });
   }, [rowData]);
 
   const myTheme = themeQuartz.withParams({
@@ -221,9 +239,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
           }}
           onCellValueChanged={onCellValueChanged}
           theme={myTheme}
-          // deltaRowDataMode={true}
           getRowId={getRowId}
-          // Prevent scroll reset when new data is set
           suppressScrollOnNewData={true}
         />
       </div>

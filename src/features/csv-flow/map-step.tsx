@@ -26,8 +26,6 @@ import { nanoid } from "nanoid";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-
-// --- Types from your codebase ---
 import {
   FieldConfig,
   FieldMappingItem,
@@ -51,10 +49,12 @@ async function mapData(
   data: Record<string, unknown>[]
 ): Promise<(Record<string, string> & Meta)[]> {
   try {
-    // Map each CSV row
     const mappedRows = data.map((row) => mapCsvRow(row, fieldMappings));
-    // Validate and attach errors
-    const validatedData = await addErrorsToData(mappedRows, fields);
+    const validatedData = await addErrorsToData(
+      mappedRows,
+      fields,
+      fieldMappings
+    );
     return validatedData as (Record<string, string> & Meta)[];
   } catch (error) {
     console.error("Error mapping data:", error);
@@ -64,7 +64,7 @@ async function mapData(
 
 interface MapStepProps {
   fields: FieldConfig[];
-  data: Record<string, unknown>[];
+  data: Record<string, string>[];
   columns: string[];
   setStep: React.Dispatch<React.SetStateAction<FlowSteps>>;
 }
@@ -89,9 +89,10 @@ function MapStep({ fields, data, columns, setStep }: MapStepProps) {
   });
 
   const fieldOptions = fields.map((field) => ({
-    value: field.fieldName,
+    value: field.columnName,
     label:
-      (field.displayName || field.fieldName) + (field.required ? " *" : ""),
+      (field.displayName || field.columnName) +
+      (field.columnRequired ? " *" : ""),
   }));
 
   const additionalOptions = [
@@ -106,12 +107,13 @@ function MapStep({ fields, data, columns, setStep }: MapStepProps) {
 
     const missingRequired = fields.filter(
       (field) =>
-        field.required && !Object.values(formValues).includes(field.fieldName)
+        field.columnRequired &&
+        !Object.values(formValues).includes(field.columnName)
     );
     if (missingRequired.length > 0) {
       toast.error(
         `Please map the required fields: ${missingRequired
-          .map((f) => f.displayName || f.fieldName)
+          .map((f) => f.displayName || f.columnName)
           .join(", ")}`
       );
       setProcessing(false);
@@ -123,7 +125,6 @@ function MapStep({ fields, data, columns, setStep }: MapStepProps) {
       if (mappingOption === "IGNORE_FIELD") {
         return { id: nanoid(), csvValue: col, status: FieldStatus.Ignored };
       } else if (mappingOption === "CUSTOM_FIELD") {
-        // For a custom field, we default the mappedValue to the CSV column name.
         return {
           id: nanoid(),
           csvValue: col,
@@ -131,12 +132,13 @@ function MapStep({ fields, data, columns, setStep }: MapStepProps) {
           mappedValue: col,
         };
       } else {
-        // Otherwise, the mapping option is one of the expected field names.
+        const field = fields.find((f) => f.columnName === mappingOption);
         return {
           id: nanoid(),
           csvValue: col,
           status: FieldStatus.Mapped,
           mappedValue: mappingOption,
+          type: field?.type || "string",
         };
       }
     });
@@ -169,14 +171,14 @@ function MapStep({ fields, data, columns, setStep }: MapStepProps) {
           Expected Fields:{" "}
           {fields.length === 1 ? (
             <span>
-              {fields[0].displayName || fields[0].fieldName}
-              {fields[0].required && " (Required)"}
+              {fields[0].displayName || fields[0].columnName}
+              {fields[0].columnRequired && " (Required)"}
             </span>
           ) : (
             fields.map((field, index) => (
-              <span key={field.fieldName}>
-                {field.displayName || field.fieldName}
-                {field.required && " (Required)"}
+              <span key={field.columnName}>
+                {field.displayName || field.columnName}
+                {field.columnRequired && " (Required)"}
                 {index < fields.length - 2
                   ? ", "
                   : index === fields.length - 2
@@ -204,7 +206,6 @@ function MapStep({ fields, data, columns, setStep }: MapStepProps) {
               </TableHeader>
               <TableBody>
                 {columns.map((col) => {
-                  // Show the sample value from the first row, if available.
                   const sampleValue =
                     data
                       .slice(0, 2)

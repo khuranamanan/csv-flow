@@ -7,16 +7,16 @@ import { Button } from "./components/ui/button";
 
 const csvFlowFieldsConfig: FieldConfig[] = [
   {
-    fieldName: "id",
+    columnName: "id",
     displayName: "ID",
-    required: true,
+    columnRequired: true,
     type: "number",
     // validations: [{ rule: "required" }],
   },
   {
-    fieldName: "firstName",
+    columnName: "firstName",
     displayName: "First Name",
-    required: true,
+    columnRequired: true,
     type: "string",
     validations: [
       { rule: "required" },
@@ -28,25 +28,45 @@ const csvFlowFieldsConfig: FieldConfig[] = [
     ],
   },
   {
-    fieldName: "lastName",
+    columnName: "lastName",
     displayName: "Last Name",
-    required: true,
+    columnRequired: true,
     type: "string",
     validations: [{ rule: "required" }],
   },
   {
-    fieldName: "Email",
+    columnName: "Email",
     displayName: "Email",
-    required: true,
+    columnRequired: true,
     type: "email",
     validations: [{ rule: "unique" }],
   },
   {
-    fieldName: "Phone",
+    columnName: "Phone",
     displayName: "Phone",
-    required: false,
+    columnRequired: false,
     type: "string",
-    validations: [{ rule: "unique" }],
+    validations: [
+      { rule: "unique" },
+      {
+        rule: "regex",
+        value: "^[0-9]+$",
+        errorMessage: "Phone number must contain only numbers",
+      },
+    ],
+  },
+  {
+    columnName: "date",
+    columnRequired: true,
+    type: "date",
+    displayName: "Date",
+    validations: [{ rule: "required" }],
+  },
+  {
+    columnName: "Boolean",
+    columnRequired: true,
+    type: "boolean",
+    displayName: "Boolean",
   },
 ];
 

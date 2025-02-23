@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { parseCsv } from "@/lib/csv-parse";
-import { formatBytes } from "@/lib/utils";
+import { formatBytes, toHeaderCase } from "@/lib/utils";
 import { Check, Loader } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -73,15 +73,17 @@ function UploadStep(props: Props) {
             <TableHeader>
               <TableRow>
                 <TableHead>Expected Column</TableHead>
+                <TableHead>Expected Type</TableHead>
                 <TableHead>Required</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {fields.map((field) => (
-                <TableRow key={field.fieldName}>
-                  <TableCell>{field.displayName || field.fieldName}</TableCell>
+                <TableRow key={field.columnName}>
+                  <TableCell>{field.displayName || field.columnName}</TableCell>
+                  <TableCell>{toHeaderCase(field.type)}</TableCell>
                   <TableCell>
-                    {field.required ? <Check size={16} /> : null}
+                    {field.columnRequired ? <Check size={16} /> : null}
                   </TableCell>
                 </TableRow>
               ))}
