@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { useState } from "react";
 import MapStep from "./map-step";
-import ReviewStep from "./review-step";
+import { ReviewStepTt } from "./review-step-tt";
 import StepIndicator from "./step-indicator";
 import { FieldConfig, FieldMappingItem, Meta, StepItems } from "./types";
 import UploadStep from "./upload-step";
@@ -114,12 +114,19 @@ function CsvFlow(props: CsvFlowProps) {
 
       case StepItems.Review:
         return (
-          <ReviewStep
-            data={currentStep.data}
-            fields={fields}
-            fieldMappings={currentStep.fieldMappings}
-            setStep={setCurrentStep}
-          />
+          <>
+            {/* <ReviewStepTanstack
+              data={currentStep.data}
+              fields={fields}
+              fieldMappings={currentStep.fieldMappings}
+              setStep={setCurrentStep}
+            /> */}
+            <ReviewStepTt
+              data={currentStep.data}
+              fields={fields}
+              fieldMappings={currentStep.fieldMappings}
+            />
+          </>
         );
       default:
         return null;

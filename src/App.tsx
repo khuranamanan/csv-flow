@@ -55,19 +55,19 @@ const csvFlowFieldsConfig: FieldConfig[] = [
       },
     ],
   },
-  {
-    columnName: "date",
-    columnRequired: true,
-    type: "date",
-    displayName: "Date",
-    validations: [{ rule: "required" }],
-  },
-  {
-    columnName: "Boolean",
-    columnRequired: true,
-    type: "boolean",
-    displayName: "Boolean",
-  },
+  // {
+  //   columnName: "date",
+  //   columnRequired: true,
+  //   type: "date",
+  //   displayName: "Date",
+  //   validations: [{ rule: "required" }],
+  // },
+  // {
+  //   columnName: "Boolean",
+  //   columnRequired: true,
+  //   type: "boolean",
+  //   displayName: "Boolean",
+  // },
 ];
 
 function App() {
