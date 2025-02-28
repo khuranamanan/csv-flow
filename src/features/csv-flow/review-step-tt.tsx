@@ -4,10 +4,17 @@ import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
+  Row,
+  Table,
   useReactTable,
 } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { FieldConfig, FieldMappingItem, FieldStatus, Meta } from "./types";
+import {
+  useVirtualizer,
+  VirtualItem,
+  Virtualizer,
+} from "@tanstack/react-virtual";
 
 interface ReviewStepProps {
   fields: FieldConfig[];
@@ -21,6 +28,7 @@ export function ReviewStepTt(props: ReviewStepProps) {
 
   const [rowData] = useState<(Record<string, unknown> & Meta)[]>(data);
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+  const tableContainerRef = useRef<HTMLDivElement>(null);
 
   const columns: ColumnDef<Record<string, unknown> & Meta>[] = useMemo<
     ColumnDef<Record<string, unknown> & Meta>[]
@@ -36,6 +44,7 @@ export function ReviewStepTt(props: ReviewStepProps) {
           id: mapping.mappedValue,
           header: mapping.mappedValue,
           accessorKey: mapping.mappedValue,
+          size: 180,
           minSize: 100,
           cell: ({ getValue }) => {
             const value = getValue() as string;
@@ -67,6 +76,7 @@ export function ReviewStepTt(props: ReviewStepProps) {
             aria-label="Select row"
           />
         ),
+        size: 48,
         minSize: 48,
       },
       ...mappingColumns,
@@ -76,6 +86,7 @@ export function ReviewStepTt(props: ReviewStepProps) {
   const table = useReactTable({
     data: rowData,
     columns,
+    getRowId: (row) => row.__index,
     state: {
       rowSelection,
     },
@@ -100,17 +111,23 @@ export function ReviewStepTt(props: ReviewStepProps) {
       </div>
 
       {/* Table container */}
-      <div className="relative flex-grow w-full overflow-auto text-sm border rounded-md scrollbar-thin scrollbar-thumb-muted-foreground/15 scrollbar-track-muted">
-        <table className="w-full text-sm caption-bottom">
-          <thead className="[&_tr]:border-b sticky top-0 z-10 bg-background">
+      <div
+        className="relative flex-grow w-full overflow-auto text-sm border rounded-md scrollbar-thin scrollbar-thumb-muted-foreground/15 scrollbar-track-muted"
+        ref={tableContainerRef}
+      >
+        <table className="grid w-full text-sm caption-bottom">
+          <thead className="[&_tr]:border-b bg-background z-10 grid sticky top-0">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr
                 key={headerGroup.id}
-                className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted flex w-full"
               >
                 {headerGroup.headers.map((header) => (
                   <th
-                    className="h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+                    style={{
+                      width: header.getSize(),
+                    }}
+                    className="h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] flex items-center"
                     key={header.id}
                   >
                     {header.isPlaceholder
@@ -124,42 +141,7 @@ export function ReviewStepTt(props: ReviewStepProps) {
               </tr>
             ))}
           </thead>
-          <tbody className="[&_tr:last-child]:border-0">
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      className="p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
-                      key={cell.id}
-                      style={{
-                        width: `${cell.column.getSize()}px`,
-                        minWidth: `${cell.column.columnDef.minSize}px`,
-                      }}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))
-            ) : (
-              <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                <td
-                  colSpan={columns.length}
-                  className="p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] h-24 text-center"
-                >
-                  No results.
-                </td>
-              </tr>
-            )}
-          </tbody>
+          <TableBody table={table} tableContainerRef={tableContainerRef} />
         </table>
       </div>
 
@@ -168,5 +150,83 @@ export function ReviewStepTt(props: ReviewStepProps) {
         <Button>Import</Button>
       </div>
     </div>
+  );
+}
+
+interface TableBodyProps {
+  table: Table<Record<string, unknown> & Meta>;
+  tableContainerRef: React.RefObject<HTMLDivElement>;
+}
+
+function TableBody({ table, tableContainerRef }: TableBodyProps) {
+  const { rows } = table.getRowModel();
+
+  const rowVirtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
+    count: rows.length,
+    estimateSize: () => 37, //estimate row height for accurate scrollbar dragging
+    getScrollElement: () => tableContainerRef.current,
+    //measure dynamic row height, except in firefox because it measures table border height incorrectly
+    measureElement:
+      typeof window !== "undefined" &&
+      navigator.userAgent.indexOf("Firefox") === -1
+        ? (element) => element?.getBoundingClientRect().height
+        : undefined,
+    overscan: 5,
+  });
+
+  return (
+    <tbody
+      className="[&_tr:last-child]:border-0 relative"
+      style={{
+        height: `${rowVirtualizer.getTotalSize()}px`,
+      }}
+    >
+      {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+        const row = rows[virtualRow.index];
+
+        return (
+          <TableBodyRow
+            key={row.id}
+            row={row}
+            virtualRow={virtualRow}
+            rowVirtualizer={rowVirtualizer}
+          />
+        );
+      })}
+    </tbody>
+  );
+}
+
+interface TableBodyRowProps {
+  row: Row<Record<string, unknown> & Meta>;
+  virtualRow: VirtualItem;
+  rowVirtualizer: Virtualizer<HTMLDivElement, HTMLTableRowElement>;
+}
+
+function TableBodyRow({ row, virtualRow, rowVirtualizer }: TableBodyRowProps) {
+  return (
+    <tr
+      data-index={virtualRow.index}
+      ref={(node) => rowVirtualizer.measureElement(node)}
+      style={{
+        transform: `translateY(${virtualRow.start}px)`,
+      }}
+      key={row.id}
+      className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted flex absolute w-full"
+      data-state={row.getIsSelected() && "selected"}
+    >
+      {row.getVisibleCells().map((cell) => (
+        <td
+          className="p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+          key={cell.id}
+          style={{
+            width: `${cell.column.getSize()}px`,
+            minWidth: `${cell.column.columnDef.minSize}px`,
+          }}
+        >
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </td>
+      ))}
+    </tr>
   );
 }
