@@ -8,19 +8,19 @@ import {
   Table,
   useReactTable,
 } from "@tanstack/react-table";
-import { useMemo, useRef, useState } from "react";
-import { FieldConfig, FieldMappingItem, FieldStatus, Meta } from "./types";
 import {
   useVirtualizer,
   VirtualItem,
   Virtualizer,
 } from "@tanstack/react-virtual";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { FieldConfig, FieldMappingItem, FieldStatus, Meta } from "./types";
+import { cn } from "@/lib/utils";
 
 interface ReviewStepProps {
   fields: FieldConfig[];
   data: (Record<string, unknown> & Meta)[];
   fieldMappings: FieldMappingItem[];
-  //   setStep: React.Dispatch<React.SetStateAction<FlowSteps>>;
 }
 
 export function ReviewStepTt(props: ReviewStepProps) {
@@ -54,6 +54,7 @@ export function ReviewStepTt(props: ReviewStepProps) {
       }
       return acc;
     }, []);
+
     return [
       {
         id: "select",
@@ -78,6 +79,7 @@ export function ReviewStepTt(props: ReviewStepProps) {
         ),
         size: 48,
         minSize: 48,
+        enableResizing: false,
       },
       ...mappingColumns,
     ];
@@ -87,6 +89,11 @@ export function ReviewStepTt(props: ReviewStepProps) {
     data: rowData,
     columns,
     getRowId: (row) => row.__index,
+    defaultColumn: {
+      minSize: 50,
+      maxSize: 600,
+    },
+    columnResizeMode: "onChange",
     state: {
       rowSelection,
     },
@@ -94,16 +101,25 @@ export function ReviewStepTt(props: ReviewStepProps) {
     getCoreRowModel: getCoreRowModel(),
   });
 
+  const columnSizeVars = useMemo(() => {
+    const headers = table.getFlatHeaders();
+    const colSizes: { [key: string]: number } = {};
+    for (let i = 0; i < headers.length; i++) {
+      const header = headers[i]!;
+      colSizes[`--header-${header.id}-size`] = header.getSize();
+      colSizes[`--col-${header.column.id}-size`] = header.column.getSize();
+    }
+    return colSizes;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [table.getState().columnSizingInfo, table.getState().columnSizing]);
+
   return (
     <div className="flex flex-col h-full">
       {/* Top controls: Filter and Delete */}
       <div className="flex items-center justify-end gap-4 mb-4">
         <label className="flex items-center gap-2">
           <span>Filter rows with errors</span>
-          <Checkbox
-          // checked={filterErrors}
-          // onCheckedChange={(e: CheckedState) => setFilterErrors(e)}
-          />
+          <Checkbox checked={false} onCheckedChange={() => {}} />
         </label>
         <Button variant="destructive" size="sm">
           Delete Selected
@@ -115,7 +131,10 @@ export function ReviewStepTt(props: ReviewStepProps) {
         className="relative flex-grow w-full overflow-auto text-sm border rounded-md scrollbar-thin scrollbar-thumb-muted-foreground/15 scrollbar-track-muted"
         ref={tableContainerRef}
       >
-        <table className="grid w-full text-sm caption-bottom">
+        <table
+          className="grid w-full text-sm caption-bottom"
+          style={columnSizeVars}
+        >
           <thead className="[&_tr]:border-b bg-background z-10 grid sticky top-0">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr
@@ -125,9 +144,10 @@ export function ReviewStepTt(props: ReviewStepProps) {
                 {headerGroup.headers.map((header) => (
                   <th
                     style={{
-                      width: header.getSize(),
+                      // width: header.getSize(),
+                      width: `calc(var(--header-${header?.id}-size) * 1px)`,
                     }}
-                    className="h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] flex items-center"
+                    className="h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] flex items-center relative group/th"
                     key={header.id}
                   >
                     {header.isPlaceholder
@@ -136,6 +156,17 @@ export function ReviewStepTt(props: ReviewStepProps) {
                           header.column.columnDef.header,
                           header.getContext()
                         )}
+                    <div
+                      className={cn({
+                        "absolute top-0 right-0 cursor-col-resize w-1.5 h-full bg-muted-foreground/30 hover:bg-muted-foreground/50 rounded-lg opacity-0 group-hover/th:opacity-100 transition-opacity":
+                          header.column.getCanResize(),
+                      })}
+                      {...{
+                        onDoubleClick: () => header.column.resetSize(),
+                        onMouseDown: header.getResizeHandler(),
+                        onTouchStart: header.getResizeHandler(),
+                      }}
+                    />
                   </th>
                 ))}
               </tr>
@@ -163,7 +194,7 @@ function TableBody({ table, tableContainerRef }: TableBodyProps) {
 
   const rowVirtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
     count: rows.length,
-    estimateSize: () => 37, //estimate row height for accurate scrollbar dragging
+    estimateSize: useCallback(() => 37, []),
     getScrollElement: () => tableContainerRef.current,
     //measure dynamic row height, except in firefox because it measures table border height incorrectly
     measureElement:
@@ -171,7 +202,7 @@ function TableBody({ table, tableContainerRef }: TableBodyProps) {
       navigator.userAgent.indexOf("Firefox") === -1
         ? (element) => element?.getBoundingClientRect().height
         : undefined,
-    overscan: 5,
+    // overscan: 5,
   });
 
   return (
@@ -220,8 +251,9 @@ function TableBodyRow({ row, virtualRow, rowVirtualizer }: TableBodyRowProps) {
           className="p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
           key={cell.id}
           style={{
-            width: `${cell.column.getSize()}px`,
+            // width: `${cell.column.getSize()}px`,
             minWidth: `${cell.column.columnDef.minSize}px`,
+            width: `calc(var(--col-${cell.column.id}-size) * 1px)`,
           }}
         >
           {flexRender(cell.column.columnDef.cell, cell.getContext())}
