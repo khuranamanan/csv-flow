@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
-import { useState } from "react";
+import { memo, useCallback, useState } from "react";
 import MapStep from "./map-step";
 import { ReviewStepTt } from "./review-step-tt";
 import StepIndicator from "./step-indicator";
@@ -91,7 +91,7 @@ function CsvFlow(props: CsvFlowProps) {
     step: StepItems.Upload,
   });
 
-  const renderStep = () => {
+  const renderStep = useCallback(() => {
     switch (currentStep.step) {
       case StepItems.Upload:
         return (
@@ -131,10 +131,11 @@ function CsvFlow(props: CsvFlowProps) {
       default:
         return null;
     }
-  };
+  }, [currentStep, fields, maxRows, maxFileSize]);
 
   return (
     <Dialog
+      modal
       open={open}
       onOpenChange={(isOpen) => {
         setOpen(isOpen);
@@ -178,4 +179,4 @@ function CsvFlow(props: CsvFlowProps) {
   );
 }
 
-export default CsvFlow;
+export default memo(CsvFlow);

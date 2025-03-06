@@ -1,10 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { addErrorsToData } from "@/lib/map-utils";
+import { cn } from "@/lib/utils";
 import {
   ColumnDef,
+  ColumnFiltersState,
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
   Row,
+  RowData,
   Table,
   useReactTable,
 } from "@tanstack/react-table";
@@ -13,9 +20,58 @@ import {
   VirtualItem,
   Virtualizer,
 } from "@tanstack/react-virtual";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { Trash } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { DataTableColumnHeader } from "./data-table-header";
 import { FieldConfig, FieldMappingItem, FieldStatus, Meta } from "./types";
-import { cn } from "@/lib/utils";
+
+function EditableCell({
+  initialValue,
+  updateData,
+  row,
+  columnId,
+}: {
+  initialValue: unknown;
+  updateData?: (rowIndex: string, columnId: string, value: unknown) => void;
+  row: Row<Record<string, unknown> & Meta>;
+  columnId: string;
+}) {
+  const [value, setValue] = useState(initialValue);
+
+  // When the input is blurred, update the table data.
+  const onBlur = () => {
+    if (value !== initialValue) {
+      updateData?.(row.original.__index, columnId, value);
+    }
+  };
+
+  // Sync state when initialValue changes.
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  return (
+    <div
+      className={cn("border border-transparent", {
+        "border-destructive": row.original.__errors?.[columnId],
+      })}
+    >
+      <input
+        className="w-full p-1 leading-normal align-middle bg-transparent text-text focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        value={value as string}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={onBlur}
+      />
+    </div>
+  );
+}
+
+declare module "@tanstack/react-table" {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface TableMeta<TData extends RowData> {
+    updateData: (rowIndex: string, columnId: string, value: unknown) => void;
+  }
+}
 
 interface ReviewStepProps {
   fields: FieldConfig[];
@@ -24,10 +80,13 @@ interface ReviewStepProps {
 }
 
 export function ReviewStepTt(props: ReviewStepProps) {
-  const { data, fieldMappings } = props;
+  const { data, fieldMappings, fields } = props;
 
-  const [rowData] = useState<(Record<string, unknown> & Meta)[]>(data);
+  const [rowData, setRowData] =
+    useState<(Record<string, unknown> & Meta)[]>(data);
+  const [filterErrors, setFilterErrors] = useState<boolean>(false);
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
   const columns: ColumnDef<Record<string, unknown> & Meta>[] = useMemo<
@@ -42,14 +101,24 @@ export function ReviewStepTt(props: ReviewStepProps) {
       ) {
         acc.push({
           id: mapping.mappedValue,
-          header: mapping.mappedValue,
+          header: ({ column }) => (
+            <DataTableColumnHeader
+              column={column}
+              title={mapping.mappedValue}
+            />
+          ),
+          enableSorting: true,
           accessorKey: mapping.mappedValue,
           size: 180,
           minSize: 100,
-          cell: ({ getValue }) => {
-            const value = getValue() as string;
-            return <div className="truncate">{value}</div>;
-          },
+          cell: ({ getValue, column, row, table }) => (
+            <EditableCell
+              initialValue={getValue()}
+              columnId={column.id}
+              row={row}
+              updateData={table.options.meta?.updateData}
+            />
+          ),
         });
       }
       return acc;
@@ -71,11 +140,13 @@ export function ReviewStepTt(props: ReviewStepProps) {
           />
         ),
         cell: ({ row }) => (
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label="Select row"
-          />
+          <div className="px-2 py-1">
+            <Checkbox
+              checked={row.getIsSelected()}
+              onCheckedChange={(value) => row.toggleSelected(!!value)}
+              aria-label="Select row"
+            />
+          </div>
         ),
         size: 48,
         minSize: 48,
@@ -85,8 +156,19 @@ export function ReviewStepTt(props: ReviewStepProps) {
     ];
   }, [fieldMappings]);
 
+  const filteredData = useMemo(() => {
+    if (!filterErrors) return rowData;
+    return rowData.filter(
+      (row) =>
+        row.__errors &&
+        Object.values(row.__errors).some(
+          (err: { level: string }) => err.level === "error"
+        )
+    );
+  }, [rowData, filterErrors]);
+
   const table = useReactTable({
-    data: rowData,
+    data: filteredData,
     columns,
     getRowId: (row) => row.__index,
     defaultColumn: {
@@ -96,10 +178,52 @@ export function ReviewStepTt(props: ReviewStepProps) {
     columnResizeMode: "onChange",
     state: {
       rowSelection,
+      columnFilters,
     },
+    onColumnFiltersChange: setColumnFilters,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    meta: {
+      updateData: async (rowIndex, columnId, value) => {
+        const newRowData = rowData.map((row) => {
+          if (row.__index === rowIndex) {
+            return {
+              ...row,
+              [columnId]: value,
+            };
+          }
+          return row;
+        });
+        console.log("New Row Data with new errors", newRowData);
+        const newDataWithErrors = await addErrorsToData(
+          newRowData,
+          fields,
+          fieldMappings
+        );
+        setRowData(newDataWithErrors);
+      },
+    },
   });
+
+  const selectedRowIds = useMemo(
+    () => Object.keys(rowSelection).filter((id) => rowSelection[id]),
+    [rowSelection]
+  );
+
+  const deleteSelectedRows = async () => {
+    const newData = rowData.filter(
+      (row) => !selectedRowIds.includes(row.__index)
+    );
+    const newDataWithErrors = await addErrorsToData(
+      newData,
+      fields,
+      fieldMappings
+    );
+
+    setRowData(newDataWithErrors);
+    setRowSelection({});
+  };
 
   const columnSizeVars = useMemo(() => {
     const headers = table.getFlatHeaders();
@@ -116,14 +240,38 @@ export function ReviewStepTt(props: ReviewStepProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Top controls: Filter and Delete */}
-      <div className="flex items-center justify-end gap-4 mb-4">
-        <label className="flex items-center gap-2">
-          <span>Filter rows with errors</span>
-          <Checkbox checked={false} onCheckedChange={() => {}} />
-        </label>
-        <Button variant="destructive" size="sm">
-          Delete Selected
-        </Button>
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <div>
+          <h2 className="text-2xl font-semibold">Review Your Mapped Data</h2>
+          <p className="text-sm text-muted-foreground">
+            Please verify the data below. You can update any field, select rows
+            to discard, or filter to display only rows with errors before
+            finalizing the import.
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <Label className="flex items-center gap-2">
+            <span>Show rows with errors</span>
+            <Switch
+              checked={filterErrors}
+              onCheckedChange={(e: boolean) => {
+                setFilterErrors(e);
+                setRowSelection({});
+              }}
+            />
+          </Label>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={deleteSelectedRows}
+            className="text-destructive hover:text-destructive hover:bg-destructive/5"
+            disabled={!selectedRowIds.length}
+          >
+            <Trash className="size-3" />
+            Delete Selected Rows
+          </Button>
+        </div>
       </div>
 
       {/* Table container */}
@@ -172,12 +320,23 @@ export function ReviewStepTt(props: ReviewStepProps) {
               </tr>
             ))}
           </thead>
-          <TableBody table={table} tableContainerRef={tableContainerRef} />
+          <TableBody
+            table={table}
+            tableContainerRef={tableContainerRef}
+            columnsLength={columns.length}
+          />
         </table>
       </div>
 
       {/* Continue button */}
-      <div className="flex justify-end mt-4">
+      <div className="flex items-center justify-between mt-4">
+        <div className="text-sm text-muted-foreground">
+          Total Rows: {rowData.length}
+          {selectedRowIds.length > 0 && (
+            <span className="ml-4">Selected Rows: {selectedRowIds.length}</span>
+          )}
+        </div>
+
         <Button>Import</Button>
       </div>
     </div>
@@ -187,9 +346,14 @@ export function ReviewStepTt(props: ReviewStepProps) {
 interface TableBodyProps {
   table: Table<Record<string, unknown> & Meta>;
   tableContainerRef: React.RefObject<HTMLDivElement>;
+  columnsLength: number;
 }
 
-function TableBody({ table, tableContainerRef }: TableBodyProps) {
+function TableBody({
+  table,
+  tableContainerRef,
+  columnsLength,
+}: TableBodyProps) {
   const { rows } = table.getRowModel();
 
   const rowVirtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
@@ -202,8 +366,9 @@ function TableBody({ table, tableContainerRef }: TableBodyProps) {
       navigator.userAgent.indexOf("Firefox") === -1
         ? (element) => element?.getBoundingClientRect().height
         : undefined,
-    // overscan: 5,
   });
+
+  const virtualizedRowItems = rowVirtualizer.getVirtualItems();
 
   return (
     <tbody
@@ -212,18 +377,29 @@ function TableBody({ table, tableContainerRef }: TableBodyProps) {
         height: `${rowVirtualizer.getTotalSize()}px`,
       }}
     >
-      {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-        const row = rows[virtualRow.index];
+      {virtualizedRowItems.length ? (
+        virtualizedRowItems.map((virtualRow) => {
+          const row = rows[virtualRow.index];
 
-        return (
-          <TableBodyRow
-            key={row.id}
-            row={row}
-            virtualRow={virtualRow}
-            rowVirtualizer={rowVirtualizer}
-          />
-        );
-      })}
+          return (
+            <TableBodyRow
+              key={row.id}
+              row={row}
+              virtualRow={virtualRow}
+              rowVirtualizer={rowVirtualizer}
+            />
+          );
+        })
+      ) : (
+        <tr>
+          <td
+            colSpan={columnsLength}
+            className="h-24 p-4 text-center text-muted-foreground"
+          >
+            No results.
+          </td>
+        </tr>
+      )}
     </tbody>
   );
 }
@@ -248,7 +424,7 @@ function TableBodyRow({ row, virtualRow, rowVirtualizer }: TableBodyRowProps) {
     >
       {row.getVisibleCells().map((cell) => (
         <td
-          className="p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
+          className="align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
           key={cell.id}
           style={{
             // width: `${cell.column.getSize()}px`,
