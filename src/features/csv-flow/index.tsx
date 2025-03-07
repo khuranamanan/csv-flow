@@ -3,7 +3,13 @@ import { memo, useCallback, useState } from "react";
 import MapStep from "./map-step";
 import { ReviewStep } from "./review-step";
 import StepIndicator from "./step-indicator";
-import { FieldConfig, FieldMappingItem, Meta, StepItems } from "./types";
+import {
+  CsvColumn,
+  FieldConfig,
+  FieldMappingItem,
+  Meta,
+  StepItems,
+} from "./types";
 import UploadStep from "./upload-step";
 
 export type FlowSteps =
@@ -13,7 +19,7 @@ export type FlowSteps =
   | {
       step: StepItems.Map;
       data: Record<string, string>[];
-      columns: string[];
+      columns: CsvColumn[];
     }
   | {
       step: StepItems.Review;

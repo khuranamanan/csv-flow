@@ -1,3 +1,5 @@
+import { CsvColumn } from "@/features/csv-flow/types";
+import { nanoid } from "nanoid";
 import Papa from "papaparse";
 
 export interface ParseCsvArgs {
@@ -9,7 +11,7 @@ export interface ParseCsvArgs {
 
 export async function parseCsv(
   args: ParseCsvArgs
-): Promise<{ data: Record<string, string>[]; columns: string[] }> {
+): Promise<{ data: Record<string, string>[]; columns: CsvColumn[] }> {
   const { file, config = {}, limit, showEmptyFields = true } = args;
 
   return new Promise((resolve, reject) => {
@@ -49,7 +51,10 @@ export async function parseCsv(
             )
           );
         } else {
-          resolve({ data: parsedData, columns });
+          resolve({
+            data: parsedData,
+            columns: columns.map((v) => ({ id: nanoid(), column: v })),
+          });
         }
       },
       error: (error) => reject(new Error(`Parsing failed: ${error.message}`)),

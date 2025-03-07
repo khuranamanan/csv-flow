@@ -154,3 +154,5 @@ export type FieldMappingItem = {
     }
   | { status: FieldStatus.Unmapped | FieldStatus.Ignored }
 );
+
+export type CsvColumn = { id: string; column: string };

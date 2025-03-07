@@ -27,6 +27,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import {
+  CsvColumn,
   FieldConfig,
   FieldMappingItem,
   FieldStatus,
@@ -65,7 +66,7 @@ async function mapData(
 interface MapStepProps {
   fields: FieldConfig[];
   data: Record<string, string>[];
-  columns: string[];
+  columns: CsvColumn[];
   setStep: React.Dispatch<React.SetStateAction<FlowSteps>>;
 }
 
@@ -78,7 +79,7 @@ function MapStep({ fields, data, columns, setStep }: MapStepProps) {
 
   const defaultValues = {
     mappings: columns.reduce((acc, col) => {
-      acc[col] = "IGNORE_FIELD";
+      acc[col.id] = "IGNORE_FIELD";
       return acc;
     }, {} as Record<string, string>),
   };
@@ -121,21 +122,25 @@ function MapStep({ fields, data, columns, setStep }: MapStepProps) {
     }
 
     const fieldMappings: FieldMappingItem[] = columns.map((col) => {
-      const mappingOption = formValues[col];
+      const mappingOption = formValues[col.id];
       if (mappingOption === "IGNORE_FIELD") {
-        return { id: nanoid(), csvValue: col, status: FieldStatus.Ignored };
+        return {
+          id: nanoid(),
+          csvValue: col.column,
+          status: FieldStatus.Ignored,
+        };
       } else if (mappingOption === "CUSTOM_FIELD") {
         return {
           id: nanoid(),
-          csvValue: col,
+          csvValue: col.column,
           status: FieldStatus.Custom,
-          mappedValue: col,
+          mappedValue: col.column,
         };
       } else {
         const field = fields.find((f) => f.columnName === mappingOption);
         return {
           id: nanoid(),
-          csvValue: col,
+          csvValue: col.column,
           status: FieldStatus.Mapped,
           mappedValue: mappingOption,
           type: field?.type || "string",
@@ -209,13 +214,13 @@ function MapStep({ fields, data, columns, setStep }: MapStepProps) {
                   const sampleValue =
                     data
                       .slice(0, 2)
-                      .map((row) => row[col])
+                      .map((row) => row[col.column])
                       .filter(Boolean)
                       .join(", ") || "";
                   return (
-                    <TableRow key={col}>
+                    <TableRow key={col.id}>
                       <TableCell className="font-medium min-w-40">
-                        {col}
+                        {col.column}
                       </TableCell>
                       <TableCell>
                         <p className="text-sm text-muted-foreground">
@@ -225,7 +230,7 @@ function MapStep({ fields, data, columns, setStep }: MapStepProps) {
                       <TableCell className="min-w-80">
                         <FormField
                           control={form.control}
-                          name={`mappings.${col}`}
+                          name={`mappings.${col.id}`}
                           render={({ field }) => (
                             <FormItem className="w-64">
                               <FormControl>
