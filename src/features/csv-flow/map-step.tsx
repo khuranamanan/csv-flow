@@ -40,6 +40,9 @@ import { useState } from "react";
 import { Loader } from "lucide-react";
 import { FlowSteps } from ".";
 
+const IGNORE_FIELD_VALUE = "IGNORE_FIELD";
+const CUSTOM_FIELD_VALUE = "CUSTOM_FIELD";
+
 /**
  * Transforms CSV data by mapping each row using the field mappings,
  * then applying validations based on the field configuration.
@@ -79,7 +82,7 @@ function MapStep({ fields, data, columns, setStep }: MapStepProps) {
 
   const defaultValues = {
     mappings: columns.reduce((acc, col) => {
-      acc[col.id] = "IGNORE_FIELD";
+      acc[col.id] = IGNORE_FIELD_VALUE;
       return acc;
     }, {} as Record<string, string>),
   };
@@ -97,14 +100,38 @@ function MapStep({ fields, data, columns, setStep }: MapStepProps) {
   }));
 
   const additionalOptions = [
-    { value: "CUSTOM_FIELD", label: "Custom Field" },
-    { value: "IGNORE_FIELD", label: "Ignore Field" },
+    { value: CUSTOM_FIELD_VALUE, label: "Custom Field" },
+    { value: IGNORE_FIELD_VALUE, label: "Ignore Field" },
   ];
 
   const onSubmit = async (values: z.infer<typeof mappingSchema>) => {
     setProcessing(true);
 
     const formValues = values.mappings;
+
+    const mappingCounts = Object.values(formValues).reduce(
+      (counts, mapping) => {
+        if (mapping !== IGNORE_FIELD_VALUE && mapping !== CUSTOM_FIELD_VALUE) {
+          counts[mapping] = (counts[mapping] || 0) + 1;
+        }
+        return counts;
+      },
+      {} as Record<string, number>
+    );
+
+    const duplicates = Object.entries(mappingCounts).filter(
+      ([, count]) => count > 1
+    );
+
+    if (duplicates.length > 0) {
+      toast.error(
+        `Each field can only be mapped once. Duplicate mapping for: ${duplicates
+          .map(([field]) => field)
+          .join(", ")}`
+      );
+      setProcessing(false);
+      return;
+    }
 
     const missingRequired = fields.filter(
       (field) =>
@@ -123,13 +150,13 @@ function MapStep({ fields, data, columns, setStep }: MapStepProps) {
 
     const fieldMappings: FieldMappingItem[] = columns.map((col) => {
       const mappingOption = formValues[col.id];
-      if (mappingOption === "IGNORE_FIELD") {
+      if (mappingOption === IGNORE_FIELD_VALUE) {
         return {
           id: nanoid(),
           csvValue: col.column,
           status: FieldStatus.Ignored,
         };
-      } else if (mappingOption === "CUSTOM_FIELD") {
+      } else if (mappingOption === CUSTOM_FIELD_VALUE) {
         return {
           id: nanoid(),
           csvValue: col.column,
