@@ -278,7 +278,7 @@ export function ReviewStep(props: ReviewStepProps) {
 
       {/* Table container */}
       <div
-        className="relative flex-grow w-full overflow-auto text-sm border rounded-md scrollbar-thin scrollbar-thumb-muted-foreground/15 scrollbar-track-muted"
+        className="relative flex-grow w-full overflow-auto text-sm border rounded-md scrollbar-thin scrollbar-thumb-muted-foreground/15 scrollbar-track-muted h-[400px]"
         ref={tableContainerRef}
       >
         <table
@@ -360,7 +360,7 @@ function TableBody({
 
   const rowVirtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
     count: rows.length,
-    estimateSize: useCallback(() => 37, []),
+    estimateSize: useCallback(() => 34, []),
     getScrollElement: () => tableContainerRef.current,
     //measure dynamic row height, except in firefox because it measures table border height incorrectly
     measureElement:
