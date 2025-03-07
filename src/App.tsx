@@ -23,7 +23,17 @@ const csvFlowFieldsConfig: FieldConfig[] = [
       {
         rule: "regex",
         value: "^[a-zA-Z]+$",
+        level: "warning",
         errorMessage: "First name must contain only letters",
+      },
+      {
+        rule: "custom",
+        validate: (value) => {
+          if (value === "Opal's") return false;
+          return true;
+        },
+        errorMessage: "First name cannot be Opal",
+        level: "warning",
       },
     ],
   },
@@ -55,19 +65,19 @@ const csvFlowFieldsConfig: FieldConfig[] = [
       },
     ],
   },
-  {
-    columnName: "date",
-    columnRequired: true,
-    type: "date",
-    displayName: "Date",
-    validations: [{ rule: "required" }],
-  },
-  {
-    columnName: "Boolean",
-    columnRequired: true,
-    type: "boolean",
-    displayName: "Boolean",
-  },
+  // {
+  //   columnName: "date",
+  //   columnRequired: true,
+  //   type: "date",
+  //   displayName: "Date",
+  //   validations: [{ rule: "required" }],
+  // },
+  // {
+  //   columnName: "Boolean",
+  //   columnRequired: true,
+  //   type: "boolean",
+  //   displayName: "Boolean",
+  // },
 ];
 
 function App() {
