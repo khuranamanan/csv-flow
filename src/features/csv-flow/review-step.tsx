@@ -29,19 +29,19 @@ function EditableCell({
   initialValue,
   updateData,
   row,
-  columnId,
+  columnName,
 }: {
   initialValue: unknown;
-  updateData?: (rowIndex: string, columnId: string, value: unknown) => void;
+  updateData?: (rowIndex: string, columnName: string, value: unknown) => void;
   row: Row<Record<string, unknown> & Meta>;
-  columnId: string;
+  columnName: string;
 }) {
   const [value, setValue] = useState(initialValue);
 
   // When the input is blurred, update the table data.
   const onBlur = () => {
     if (value !== initialValue) {
-      updateData?.(row.original.__index, columnId, value);
+      updateData?.(row.original.__index, columnName, value);
     }
   };
 
@@ -53,11 +53,11 @@ function EditableCell({
   return (
     <div
       className={cn("border border-transparent", {
-        "border-destructive": row.original.__errors?.[columnId],
+        "border-destructive": row.original.__errors?.[columnName],
       })}
     >
       <input
-        className="w-full p-1 leading-normal align-middle bg-transparent text-text focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        className="w-full px-3 py-1 leading-normal align-middle bg-transparent text-text focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         value={value as string}
         onChange={(e) => setValue(e.target.value)}
         onBlur={onBlur}
@@ -69,7 +69,7 @@ function EditableCell({
 declare module "@tanstack/react-table" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
-    updateData: (rowIndex: string, columnId: string, value: unknown) => void;
+    updateData: (rowIndex: string, columnName: string, value: unknown) => void;
   }
 }
 
@@ -100,23 +100,25 @@ export function ReviewStep(props: ReviewStepProps) {
         mapping.status === FieldStatus.Custom
       ) {
         acc.push({
-          id: mapping.mappedValue,
+          id: mapping.id,
           header: ({ column }) => (
-            <DataTableColumnHeader
-              column={column}
-              title={mapping.mappedValue}
-            />
+            <div className="w-full pl-2">
+              <DataTableColumnHeader
+                column={column}
+                title={mapping.mappedValue}
+              />
+            </div>
           ),
           enableSorting: true,
           accessorKey: mapping.mappedValue,
           size: 180,
           minSize: 100,
-          cell: ({ getValue, column, row, table }) => (
+          cell: ({ getValue, row, table }) => (
             <EditableCell
               initialValue={getValue()}
-              columnId={column.id}
               row={row}
               updateData={table.options.meta?.updateData}
+              columnName={mapping.mappedValue}
             />
           ),
         });
@@ -185,12 +187,12 @@ export function ReviewStep(props: ReviewStepProps) {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     meta: {
-      updateData: async (rowIndex, columnId, value) => {
+      updateData: async (rowIndex, columnName, value) => {
         const newRowData = rowData.map((row) => {
           if (row.__index === rowIndex) {
             return {
               ...row,
-              [columnId]: value,
+              [columnName]: value,
             };
           }
           return row;

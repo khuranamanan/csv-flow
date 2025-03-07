@@ -53,10 +53,12 @@ export function DataTableColumnHeader<TData, TValue>({
               ? "Sorted ascending. Click to sort descending."
               : "Not sorted. Click to sort ascending."
           }
-          className="-ml-3 h-8 w-fit border-none text-xs hover:bg-accent hover:text-accent-foreground data-[state=open]:bg-accent [&>svg:last-child]:hidden"
+          className="-ml-3 h-8 max-w-fit border-none text-xs hover:bg-accent hover:text-accent-foreground data-[state=open]:bg-accent [&>svg:last-child]:hidden"
         >
-          {title}
-          <SelectIcon asChild>
+          {/* <div className="flex-1 min-w-0"> */}
+          <span className="flex-1 truncate">{title}</span>
+          {/* </div> */}
+          <SelectIcon asChild className="shrink-0">
             {column.getCanSort() && column.getIsSorted() === "desc" ? (
               <ArrowDown className="ml-2.5 size-3" aria-hidden="true" />
             ) : column.getIsSorted() === "asc" ? (
