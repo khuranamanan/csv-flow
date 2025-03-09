@@ -25,15 +25,23 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DataTableColumnHeader } from "./data-table-header";
 import { FieldConfig, FieldMappingItem, FieldStatus, Meta } from "./types";
 
+type UpdateDataType = (
+  rowIndex: string,
+  columnName: string,
+  value: unknown
+) => void;
+
 function EditableCell({
   initialValue,
   updateData,
   row,
+  columnId,
   columnName,
 }: {
   initialValue: unknown;
-  updateData?: (rowIndex: string, columnName: string, value: unknown) => void;
+  updateData?: UpdateDataType;
   row: Row<Record<string, unknown> & Meta>;
+  columnId: string;
   columnName: string;
 }) {
   const [value, setValue] = useState(initialValue);
@@ -57,6 +65,7 @@ function EditableCell({
       })}
     >
       <input
+        id={`${columnId}-${row.original.__index}}`}
         className="w-full px-3 py-1 leading-normal align-middle bg-transparent text-text focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         value={value as string}
         onChange={(e) => setValue(e.target.value)}
@@ -69,7 +78,7 @@ function EditableCell({
 declare module "@tanstack/react-table" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
-    updateData: (rowIndex: string, columnName: string, value: unknown) => void;
+    updateData: UpdateDataType;
   }
 }
 
@@ -119,6 +128,7 @@ export function ReviewStep(props: ReviewStepProps) {
               row={row}
               updateData={table.options.meta?.updateData}
               columnName={mapping.mappedValue}
+              columnId={mapping.id}
             />
           ),
         });
@@ -278,7 +288,7 @@ export function ReviewStep(props: ReviewStepProps) {
 
       {/* Table container */}
       <div
-        className="relative flex-grow w-full overflow-auto text-sm border rounded-md scrollbar-thin scrollbar-thumb-muted-foreground/15 scrollbar-track-muted h-[400px]"
+        className="relative flex-grow w-full overflow-auto text-sm border rounded-md scrollbar-thin scrollbar-thumb-muted-foreground/15 scrollbar-track-muted"
         ref={tableContainerRef}
       >
         <table
@@ -370,11 +380,18 @@ function TableBody({
         : undefined,
   });
 
+  useEffect(() => {
+    if (tableContainerRef.current) {
+      rowVirtualizer.measure();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tableContainerRef.current]);
+
   const virtualizedRowItems = rowVirtualizer.getVirtualItems();
 
   return (
     <tbody
-      className="[&_tr:last-child]:border-0 relative"
+      className="[&_tr:last-child]:border-0 relative grid"
       style={{
         height: `${rowVirtualizer.getTotalSize()}px`,
       }}
