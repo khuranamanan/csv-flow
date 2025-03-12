@@ -11,7 +11,6 @@ const csvFlowFieldsConfig: FieldConfig[] = [
     displayName: "ID",
     columnRequired: true,
     type: "number",
-    // validations: [{ rule: "required" }],
   },
   {
     columnName: "firstName",
@@ -19,7 +18,6 @@ const csvFlowFieldsConfig: FieldConfig[] = [
     columnRequired: true,
     type: "string",
     validations: [
-      { rule: "required" },
       {
         rule: "regex",
         value: "^[a-zA-Z]+$",
@@ -29,11 +27,11 @@ const csvFlowFieldsConfig: FieldConfig[] = [
       {
         rule: "custom",
         validate: (value) => {
-          if (value === "Opal's") return false;
+          if (typeof value === "string" && value.length > 5) return false;
           return true;
         },
-        errorMessage: "First name cannot be Opal",
-        level: "warning",
+        errorMessage: "First name must be less than 5 characters",
+        level: "error",
       },
     ],
   },
@@ -42,14 +40,13 @@ const csvFlowFieldsConfig: FieldConfig[] = [
     displayName: "Last Name",
     columnRequired: true,
     type: "string",
-    validations: [{ rule: "required" }],
   },
   {
     columnName: "Email",
     displayName: "Email",
     columnRequired: true,
     type: "email",
-    validations: [{ rule: "unique" }],
+    validations: [{ rule: "unique", level: "warning" }],
   },
   {
     columnName: "Phone",
@@ -70,7 +67,6 @@ const csvFlowFieldsConfig: FieldConfig[] = [
   //   columnRequired: true,
   //   type: "date",
   //   displayName: "Date",
-  //   validations: [{ rule: "required" }],
   // },
   // {
   //   columnName: "Boolean",

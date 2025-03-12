@@ -4,13 +4,15 @@ export enum StepItems {
   Review = "Review",
 }
 
+export type FieldTypes = "string" | "number" | "boolean" | "email" | "date";
+
 /**
  * Configuration for a single field in the CSV.
  *
  * @interface FieldConfig
  * @property {string} columnName - The internal field name used for mapping (e.g., "Name", "Email").
  * @property {string} [displayName] - An optional human-friendly name for display purposes. If not provided, `columnName` is used.
- * @property {boolean} required - Indicates whether the field is mandatory.
+ * @property {boolean} columnRequired - Indicates whether the field is mandatory.
  * @property {"string" | "number" | "email" | "date"} type - The expected data type for the field.
  * @property {Validation[]} [validations] - An array of additional validations to apply to this field.
  *
@@ -30,9 +32,6 @@ export enum StepItems {
  *   ]
  * };
  */
-
-export type FieldTypes = "string" | "number" | "boolean" | "email" | "date";
-
 export interface FieldConfig {
   columnName: string; // The field name to map to (e.g., "Name", "Email")
   displayName?: string;
@@ -46,25 +45,7 @@ export interface FieldConfig {
  *
  * @typedef {RequiredValidation | UniqueValidation | RegexValidation} Validation
  */
-export type Validation =
-  | RequiredValidation
-  | UniqueValidation
-  | RegexValidation
-  | CustomValidation;
-
-/**
- * Validation for required fields.
- *
- * @typedef {Object} RequiredValidation
- * @property {"required"} rule - The rule identifier.
- * @property {string} [errorMessage] - Optional custom error message if the field is missing.
- * @property {ErrorLevel} [level] - The severity level of the error.
- */
-export type RequiredValidation = {
-  rule: "required";
-  errorMessage?: string;
-  level?: ErrorLevel;
-};
+export type Validation = UniqueValidation | RegexValidation | CustomValidation;
 
 /**
  * Validation to ensure a field's value is unique across the dataset.
@@ -100,6 +81,20 @@ export type RegexValidation = {
   level?: ErrorLevel;
 };
 
+/**
+ *
+ */
+/**
+ * Represents a custom validation rule.
+ *
+ * @typedef {object} CustomValidation
+ *
+ * @property {"custom"} rule - A literal string indicating this is a custom validation rule.
+ * @property {(value: unknown, row: Record<string, unknown>) => boolean} validate -
+ *   The validation function that takes a value and its associated row, returning true if the value passes the validation, otherwise false.
+ * @property {string} errorMessage - The error message to be displayed when the validation fails.
+ * @property {ErrorLevel} [level] - An optional property representing the level of the error.
+ */
 export type CustomValidation = {
   rule: "custom";
   validate: (value: unknown, row: Record<string, unknown>) => boolean;

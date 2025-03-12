@@ -8,6 +8,9 @@ import {
   Error as FieldError,
   UniqueValidation,
   CustomValidation,
+  RegexValidation,
+  InfoWithSource,
+  ErrorLevel,
 } from "@/features/csv-flow/types";
 import { nanoid } from "nanoid";
 import { isValid } from "date-fns";
@@ -66,45 +69,54 @@ function getBaseSchema(field: FieldConfig): ZodTypeAny {
 
 /**
  * Returns a Zod schema for a field by starting with the base schema,
- * then applying required and regex validations.
+ * then applying required validations.
  *
- * Note: Custom validations that depend on the entire row are handled separately.
+ * Note: Custom and regex validations that depend on the entire row are handled separately.
  */
 function getFieldSchema(field: FieldConfig): ZodTypeAny {
   let schema = getBaseSchema(field);
 
-  if (field.validations?.some((v) => v.rule === "required")) {
-    schema = schema.refine(
-      (val) => val !== undefined && val !== null && val !== "",
-      { message: "This field is required" }
-    );
+  if (field.columnRequired) {
+    if (schema instanceof z.ZodString) {
+      schema = schema.min(1, { message: "This field is required" });
+    } else {
+      schema = schema.refine(
+        (val) => val !== undefined && val !== null && val !== "",
+        { message: "This field is required" }
+      );
+    }
   } else {
     schema = schema.optional();
-  }
-
-  if (field.validations) {
-    field.validations.forEach((validation) => {
-      if (validation.rule === "regex") {
-        schema = schema.refine(
-          (val) => {
-            if (val === undefined || val === null || val === "") return true;
-            const regex = new RegExp(validation.value, validation.flags);
-            return regex.test(String(val));
-          },
-          { message: validation.errorMessage }
-        );
-      }
-    });
   }
 
   return schema;
 }
 
 /**
+ * Helper function to update an error for a field in an error object.
+ * Only updates if the new error's level is higher than the current one.
+ */
+function updateError(
+  fieldName: string,
+  newError: InfoWithSource,
+  errors: FieldError
+) {
+  const priority: Record<ErrorLevel, number> = {
+    info: 1,
+    warning: 2,
+    error: 3,
+  };
+  const current = errors[fieldName];
+  if (!current || priority[newError.level] > priority[current.level]) {
+    errors[fieldName] = newError;
+  }
+}
+
+/**
  * Applies validations to the mapped data using Zod for type validations.
  * After parsing each row with the generated row schema, any Zod errors are
  * converted to your expected error format. Then, we run custom (row-level)
- * validations and table-level unique validations.
+ * validations, regex validations, and table-level unique validations.
  *
  * The `fieldMappings` parameter is used to determine if a given field is
  * actually mapped. If a field isn’t mapped (status Unmapped/ Ignored),
@@ -115,6 +127,15 @@ export async function addErrorsToData(
   fields: FieldConfig[],
   fieldMappings: FieldMappingItem[]
 ): Promise<(Record<string, unknown> & Meta)[]> {
+  function isFieldMapped(field: FieldConfig) {
+    return fieldMappings.some(
+      (mapping) =>
+        (mapping.status === FieldStatus.Mapped ||
+          mapping.status === FieldStatus.Custom) &&
+        mapping.mappedValue === field.columnName
+    );
+  }
+
   const processedRows = data.map((row) => {
     const newRow: Record<string, unknown> = { ...row };
     const errors: FieldError = {};
@@ -128,26 +149,59 @@ export async function addErrorsToData(
         newRow[field.columnName] = result.data;
       } else {
         newRow[field.columnName] = value;
-        errors[field.columnName] = {
-          message: result.error.issues[0].message,
-          level: "error",
-          source: ErrorSources.Row,
-        };
+        updateError(
+          field.columnName,
+          {
+            message: result.error.issues[0].message,
+            level: "error",
+            source: ErrorSources.Row,
+          },
+          errors
+        );
       }
     });
 
+    // Custom and Regex Validations
     fields.forEach((field) => {
+      if (!isFieldMapped(field)) return;
+
       const customValidations = field.validations?.filter(
         (v) => v.rule === "custom"
       ) as CustomValidation[] | undefined;
+
       if (customValidations) {
         customValidations.forEach((validation) => {
           if (!validation.validate(newRow[field.columnName], newRow)) {
-            errors[field.columnName] = {
-              message: validation.errorMessage,
-              level: validation.level || "error",
-              source: ErrorSources.Row,
-            };
+            updateError(
+              field.columnName,
+              {
+                message: validation.errorMessage,
+                level: validation.level || "error",
+                source: ErrorSources.Row,
+              },
+              errors
+            );
+          }
+        });
+      }
+
+      const regexValidations = field.validations?.filter(
+        (v) => v.rule === "regex"
+      ) as RegexValidation[] | undefined;
+
+      if (regexValidations) {
+        regexValidations.forEach((validation) => {
+          const regex = new RegExp(validation.value, validation.flags);
+          if (!regex.test(String(newRow[field.columnName] || ""))) {
+            updateError(
+              field.columnName,
+              {
+                message: validation.errorMessage,
+                level: validation.level || "error",
+                source: ErrorSources.Row,
+              },
+              errors
+            );
           }
         });
       }
@@ -161,17 +215,15 @@ export async function addErrorsToData(
   });
 
   let result: (Record<string, unknown> & Meta)[] = processedRows;
+
+  // Unique Validation
   fields.forEach((field) => {
     const uniqueValidation = field.validations?.find(
       (v) => v.rule === "unique"
     ) as UniqueValidation | undefined;
+
     if (uniqueValidation) {
-      const isMapped = fieldMappings.some(
-        (mapping) =>
-          (mapping.status === FieldStatus.Mapped ||
-            mapping.status === FieldStatus.Custom) &&
-          mapping.mappedValue === field.columnName
-      );
+      const isMapped = isFieldMapped(field);
       if (!isMapped) return;
 
       const values = result.map((entry) => entry[field.columnName]);
@@ -186,14 +238,19 @@ export async function addErrorsToData(
           seen.add(val);
         }
       });
+
       result = result.map((entry) => {
         if (duplicates.has(entry[field.columnName])) {
           const currentErrors = entry.__errors || ({} as FieldError);
-          currentErrors[field.columnName] = {
-            message: uniqueValidation.errorMessage || "Field must be unique",
-            level: uniqueValidation.level || "error",
-            source: ErrorSources.Table,
-          };
+          updateError(
+            field.columnName,
+            {
+              message: uniqueValidation.errorMessage || "Field must be unique",
+              level: uniqueValidation.level || "error",
+              source: ErrorSources.Table,
+            },
+            currentErrors
+          );
           return { ...entry, __errors: currentErrors };
         }
         return entry;

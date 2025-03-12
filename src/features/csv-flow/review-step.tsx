@@ -3,7 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { addErrorsToData } from "@/lib/map-utils";
-import { cn } from "@/lib/utils";
+import { cn, toHeaderCase } from "@/lib/utils";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -24,6 +24,12 @@ import { Trash } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DataTableColumnHeader } from "./data-table-header";
 import { FieldConfig, FieldMappingItem, FieldStatus, Meta } from "./types";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
 
 type UpdateDataType = (
   rowIndex: string,
@@ -58,19 +64,48 @@ function EditableCell({
     setValue(initialValue);
   }, [initialValue]);
 
+  const hasError = row.original.__errors?.[columnName];
+  const isError = !!hasError && hasError.level === "error";
+  const isWarning = !!hasError && hasError.level === "warning";
+  const isInfo = !!hasError && hasError.level === "info";
+
   return (
     <div
       className={cn("border border-transparent", {
-        "border-destructive": row.original.__errors?.[columnName],
+        "border-l-destructive border-l-2 bg-destructive/5": isError,
+        "border-l-yellow-500 border-l-2 bg-yellow-500/5": isWarning,
+        "border-l-blue-500 border-l-2 bg-blue-500/5": isInfo,
       })}
     >
-      <input
-        id={`${columnId}-${row.original.__index}}`}
-        className="w-full px-3 py-1 leading-normal align-middle bg-transparent text-text focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        value={value as string}
-        onChange={(e) => setValue(e.target.value)}
-        onBlur={onBlur}
-      />
+      {hasError ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <input
+              id={`${columnId}-${row.original.__index}}`}
+              className="w-full px-3 py-1 leading-normal align-middle bg-transparent text-text focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              value={String(value)}
+              onChange={(e) => setValue(e.target.value)}
+              onBlur={onBlur}
+            />
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>
+              <span className="font-medium">
+                {toHeaderCase(hasError.level)}
+              </span>
+              : {hasError.message}
+            </p>
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <input
+          id={`${columnId}-${row.original.__index}}`}
+          className="w-full px-3 py-1 leading-normal align-middle bg-transparent text-text focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          value={String(value)}
+          onChange={(e) => setValue(e.target.value)}
+          onBlur={onBlur}
+        />
+      )}
     </div>
   );
 }
@@ -173,9 +208,7 @@ export function ReviewStep(props: ReviewStepProps) {
     return rowData.filter(
       (row) =>
         row.__errors &&
-        Object.values(row.__errors).some(
-          (err: { level: string }) => err.level === "error"
-        )
+        Object.values(row.__errors).some((err) => err.level === "error")
     );
   }, [rowData, filterErrors]);
 
@@ -250,108 +283,112 @@ export function ReviewStep(props: ReviewStepProps) {
   }, [table.getState().columnSizingInfo, table.getState().columnSizing]);
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Top controls: Filter and Delete */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-        <div>
-          <h2 className="text-2xl font-semibold">Review Your Mapped Data</h2>
-          <p className="text-sm text-muted-foreground">
-            Please verify the data below. You can update any field, select rows
-            to discard, or filter to display only rows with errors before
-            finalizing the import.
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <Label className="flex items-center gap-2">
-            <span>Show rows with errors</span>
-            <Switch
-              checked={filterErrors}
-              onCheckedChange={(e: boolean) => {
-                setFilterErrors(e);
-                setRowSelection({});
-              }}
-            />
-          </Label>
+    <TooltipProvider>
+      <div className="flex flex-col h-full">
+        {/* Top controls: Filter and Delete */}
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-2xl font-semibold">Review Your Mapped Data</h2>
+            <p className="text-sm text-muted-foreground">
+              Please verify the data below. You can update any field, select
+              rows to discard, or filter to display only rows with errors before
+              finalizing the import.
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Label className="flex items-center gap-2">
+              <span>Show rows with errors</span>
+              <Switch
+                checked={filterErrors}
+                onCheckedChange={(e: boolean) => {
+                  setFilterErrors(e);
+                  setRowSelection({});
+                }}
+              />
+            </Label>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={deleteSelectedRows}
-            className="text-destructive hover:text-destructive hover:bg-destructive/5"
-            disabled={!selectedRowIds.length}
-          >
-            <Trash className="size-3" />
-            Delete Selected Rows
-          </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={deleteSelectedRows}
+              className="text-destructive hover:text-destructive hover:bg-destructive/5"
+              disabled={!selectedRowIds.length}
+            >
+              <Trash className="size-3" />
+              Delete Selected Rows
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* Table container */}
-      <div
-        className="relative flex-grow w-full overflow-auto text-sm border rounded-md scrollbar-thin scrollbar-thumb-muted-foreground/15 scrollbar-track-muted"
-        ref={tableContainerRef}
-      >
-        <table
-          className="grid w-full text-sm caption-bottom"
-          style={columnSizeVars}
+        {/* Table container */}
+        <div
+          className="relative flex-grow w-full overflow-auto text-sm border rounded-md scrollbar-thin scrollbar-thumb-muted-foreground/15 scrollbar-track-muted"
+          ref={tableContainerRef}
         >
-          <thead className="[&_tr]:border-b bg-background z-10 grid sticky top-0">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr
-                key={headerGroup.id}
-                className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted flex w-full"
-              >
-                {headerGroup.headers.map((header) => (
-                  <th
-                    style={{
-                      // width: header.getSize(),
-                      width: `calc(var(--header-${header?.id}-size) * 1px)`,
-                    }}
-                    className="h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] flex items-center relative group/th"
-                    key={header.id}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                    <div
-                      className={cn({
-                        "absolute top-0 right-0 cursor-col-resize w-1.5 h-full bg-muted-foreground/30 hover:bg-muted-foreground/50 rounded-lg opacity-0 group-hover/th:opacity-100 transition-opacity":
-                          header.column.getCanResize(),
-                      })}
-                      {...{
-                        onDoubleClick: () => header.column.resetSize(),
-                        onMouseDown: header.getResizeHandler(),
-                        onTouchStart: header.getResizeHandler(),
+          <table
+            className="grid w-full text-sm caption-bottom"
+            style={columnSizeVars}
+          >
+            <thead className="[&_tr]:border-b bg-background z-10 grid sticky top-0">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr
+                  key={headerGroup.id}
+                  className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted flex w-full"
+                >
+                  {headerGroup.headers.map((header) => (
+                    <th
+                      style={{
+                        // width: header.getSize(),
+                        width: `calc(var(--header-${header?.id}-size) * 1px)`,
                       }}
-                    />
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <TableBody
-            table={table}
-            tableContainerRef={tableContainerRef}
-            columnsLength={columns.length}
-          />
-        </table>
-      </div>
-
-      {/* Continue button */}
-      <div className="flex items-center justify-between mt-4">
-        <div className="text-sm text-muted-foreground">
-          Total Rows: {rowData.length}
-          {selectedRowIds.length > 0 && (
-            <span className="ml-4">Selected Rows: {selectedRowIds.length}</span>
-          )}
+                      className="h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] flex items-center relative group/th"
+                      key={header.id}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                      <div
+                        className={cn({
+                          "absolute top-0 right-0 cursor-col-resize w-1.5 h-full bg-muted-foreground/30 hover:bg-muted-foreground/50 rounded-lg opacity-0 group-hover/th:opacity-100 transition-opacity":
+                            header.column.getCanResize(),
+                        })}
+                        {...{
+                          onDoubleClick: () => header.column.resetSize(),
+                          onMouseDown: header.getResizeHandler(),
+                          onTouchStart: header.getResizeHandler(),
+                        }}
+                      />
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <TableBody
+              table={table}
+              tableContainerRef={tableContainerRef}
+              columnsLength={columns.length}
+            />
+          </table>
         </div>
 
-        <Button>Import</Button>
+        {/* Continue button */}
+        <div className="flex items-center justify-between mt-4">
+          <div className="text-sm text-muted-foreground">
+            Total Rows: {rowData.length}
+            {selectedRowIds.length > 0 && (
+              <span className="ml-4">
+                Selected Rows: {selectedRowIds.length}
+              </span>
+            )}
+          </div>
+
+          <Button>Import</Button>
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }
 
