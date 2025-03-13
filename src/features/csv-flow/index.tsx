@@ -1,8 +1,8 @@
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { memo, useCallback, useState } from "react";
-import MapStep from "./map-step";
-import { ReviewStep } from "./review-step";
-import StepIndicator from "./step-indicator";
+import MapStep from "./components/map-step";
+import { ReviewStep } from "./components/review-step";
+import StepIndicator from "./components/step-indicator";
 import {
   CsvColumn,
   CsvFlowProps,
@@ -10,7 +10,7 @@ import {
   Meta,
   StepItems,
 } from "./types";
-import UploadStep from "./upload-step";
+import UploadStep from "./components/upload-step";
 
 export type FlowSteps =
   | {

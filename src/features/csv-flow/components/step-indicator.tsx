@@ -1,12 +1,12 @@
 import { DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
-interface Props {
+type Props = {
   number: number;
   text: string;
   description?: string;
   active: boolean;
-}
+};
 
 function StepIndicator(props: Props) {
   const { number, text, description, active } = props;

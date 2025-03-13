@@ -16,11 +16,11 @@ interface DataTableColumnHeaderProps<TData, TValue>
   title: string;
 }
 
-export function DataTableColumnHeader<TData, TValue>({
-  column,
-  title,
-  className,
-}: DataTableColumnHeaderProps<TData, TValue>) {
+export function DataTableColumnHeader<TData, TValue>(
+  props: DataTableColumnHeaderProps<TData, TValue>
+) {
+  const { column, title, className } = props;
+
   if (!column.getCanSort() && !column.getCanHide()) {
     return <div className={cn(className)}>{title}</div>;
   }

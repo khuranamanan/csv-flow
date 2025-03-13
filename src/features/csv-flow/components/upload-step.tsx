@@ -15,15 +15,15 @@ import { formatBytes, toHeaderCase } from "@/lib/utils";
 import { Check, Loader } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { FlowSteps } from ".";
-import { FieldConfig, StepItems } from "./types";
+import { FlowSteps } from "..";
+import { FieldConfig, StepItems } from "../types";
 
-interface Props {
+type Props = {
   fields: FieldConfig[];
   maxRows: number;
   setStep: React.Dispatch<React.SetStateAction<FlowSteps>>;
   maxFileSize: number;
-}
+};
 
 function UploadStep(props: Props) {
   const { fields, maxRows, setStep, maxFileSize } = props;

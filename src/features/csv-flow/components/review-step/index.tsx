@@ -3,119 +3,31 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { addErrorsToData } from "@/lib/map-utils";
-import { cn, toHeaderCase } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
 import {
   ColumnDef,
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
-  Row,
   RowData,
-  Table,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  useVirtualizer,
-  VirtualItem,
-  Virtualizer,
-} from "@tanstack/react-virtual";
 import { Loader, Trash } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { DataTableColumnHeader } from "./data-table-header";
+import { useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
   CustomFieldReturnType,
   FieldConfig,
   FieldMappingItem,
   FieldStatus,
   Meta,
-} from "./types";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { TooltipProvider } from "@radix-ui/react-tooltip";
-import { toast } from "sonner";
-
-type UpdateDataType = (
-  rowIndex: string,
-  columnName: string,
-  value: unknown
-) => void;
-
-function EditableCell({
-  initialValue,
-  updateData,
-  row,
-  columnId,
-  columnName,
-}: {
-  initialValue: unknown;
-  updateData?: UpdateDataType;
-  row: Row<Record<string, unknown> & Meta>;
-  columnId: string;
-  columnName: string;
-}) {
-  const [value, setValue] = useState(initialValue);
-
-  // When the input is blurred, update the table data.
-  const onBlur = () => {
-    if (value !== initialValue) {
-      updateData?.(row.original.__index, columnName, value);
-    }
-  };
-
-  // Sync state when initialValue changes.
-  useEffect(() => {
-    setValue(initialValue);
-  }, [initialValue]);
-
-  const hasError = row.original.__errors?.[columnName];
-  const isError = !!hasError && hasError.level === "error";
-  const isWarning = !!hasError && hasError.level === "warning";
-  const isInfo = !!hasError && hasError.level === "info";
-
-  return (
-    <div
-      className={cn("border border-transparent", {
-        "border-l-destructive border-l-2 bg-destructive/5": isError,
-        "border-l-yellow-500 border-l-2 bg-yellow-500/5": isWarning,
-        "border-l-blue-500 border-l-2 bg-blue-500/5": isInfo,
-      })}
-    >
-      {hasError ? (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <input
-              id={`${columnId}-${row.original.__index}}`}
-              className="w-full px-3 py-1 leading-normal align-middle bg-transparent text-text focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              value={String(value)}
-              onChange={(e) => setValue(e.target.value)}
-              onBlur={onBlur}
-            />
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>
-              <span className="font-medium">
-                {toHeaderCase(hasError.level)}
-              </span>
-              : {hasError.message}
-            </p>
-          </TooltipContent>
-        </Tooltip>
-      ) : (
-        <input
-          id={`${columnId}-${row.original.__index}}`}
-          className="w-full px-3 py-1 leading-normal align-middle bg-transparent text-text focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          value={String(value)}
-          onChange={(e) => setValue(e.target.value)}
-          onBlur={onBlur}
-        />
-      )}
-    </div>
-  );
-}
+  UpdateDataType,
+} from "../../types";
+import { DataTableColumnHeader } from "./data-table-header";
+import { EditableCell } from "./editable-cell";
+import { TableBody } from "./table-body";
 
 declare module "@tanstack/react-table" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -124,7 +36,7 @@ declare module "@tanstack/react-table" {
   }
 }
 
-interface ReviewStepProps {
+type ReviewStepProps = {
   fields: FieldConfig[];
   data: (Record<string, unknown> & Meta)[];
   fieldMappings: FieldMappingItem[];
@@ -132,7 +44,7 @@ interface ReviewStepProps {
   customFieldReturnType?: CustomFieldReturnType;
   onImport: (data: Record<string, unknown>[]) => void;
   handleCloseDialog: () => void;
-}
+};
 
 export function ReviewStep(props: ReviewStepProps) {
   const {
@@ -478,108 +390,5 @@ export function ReviewStep(props: ReviewStepProps) {
         </div>
       </div>
     </TooltipProvider>
-  );
-}
-
-interface TableBodyProps {
-  table: Table<Record<string, unknown> & Meta>;
-  tableContainerRef: React.RefObject<HTMLDivElement>;
-  columnsLength: number;
-}
-
-function TableBody({
-  table,
-  tableContainerRef,
-  columnsLength,
-}: TableBodyProps) {
-  const { rows } = table.getRowModel();
-
-  const rowVirtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
-    count: rows.length,
-    estimateSize: useCallback(() => 34, []),
-    getScrollElement: () => tableContainerRef.current,
-    //measure dynamic row height, except in firefox because it measures table border height incorrectly
-    measureElement:
-      typeof window !== "undefined" &&
-      navigator.userAgent.indexOf("Firefox") === -1
-        ? (element) => element?.getBoundingClientRect().height
-        : undefined,
-  });
-
-  useEffect(() => {
-    if (tableContainerRef.current) {
-      rowVirtualizer.measure();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tableContainerRef.current]);
-
-  const virtualizedRowItems = rowVirtualizer.getVirtualItems();
-
-  return (
-    <tbody
-      className="[&_tr:last-child]:border-0 relative grid"
-      style={{
-        height: `${rowVirtualizer.getTotalSize()}px`,
-      }}
-    >
-      {virtualizedRowItems.length ? (
-        virtualizedRowItems.map((virtualRow) => {
-          const row = rows[virtualRow.index];
-
-          return (
-            <TableBodyRow
-              key={row.id}
-              row={row}
-              virtualRow={virtualRow}
-              rowVirtualizer={rowVirtualizer}
-            />
-          );
-        })
-      ) : (
-        <tr>
-          <td
-            colSpan={columnsLength}
-            className="h-24 p-4 text-center text-muted-foreground"
-          >
-            No results.
-          </td>
-        </tr>
-      )}
-    </tbody>
-  );
-}
-
-interface TableBodyRowProps {
-  row: Row<Record<string, unknown> & Meta>;
-  virtualRow: VirtualItem;
-  rowVirtualizer: Virtualizer<HTMLDivElement, HTMLTableRowElement>;
-}
-
-function TableBodyRow({ row, virtualRow, rowVirtualizer }: TableBodyRowProps) {
-  return (
-    <tr
-      data-index={virtualRow.index}
-      ref={(node) => rowVirtualizer.measureElement(node)}
-      style={{
-        transform: `translateY(${virtualRow.start}px)`,
-      }}
-      key={row.id}
-      className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted flex absolute w-full"
-      data-state={row.getIsSelected() && "selected"}
-    >
-      {row.getVisibleCells().map((cell) => (
-        <td
-          className="align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
-          key={cell.id}
-          style={{
-            // width: `${cell.column.getSize()}px`,
-            minWidth: `${cell.column.columnDef.minSize}px`,
-            width: `calc(var(--col-${cell.column.id}-size) * 1px)`,
-          }}
-        >
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </td>
-      ))}
-    </tr>
   );
 }

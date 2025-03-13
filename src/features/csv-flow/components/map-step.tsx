@@ -29,7 +29,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { FlowSteps } from ".";
+import { FlowSteps } from "..";
 import {
   CsvColumn,
   FieldConfig,
@@ -37,7 +37,7 @@ import {
   FieldStatus,
   Meta,
   StepItems,
-} from "./types";
+} from "../types";
 
 const IGNORE_FIELD_VALUE = "IGNORE_FIELD";
 const CUSTOM_FIELD_VALUE = "CUSTOM_FIELD";
@@ -65,13 +65,13 @@ async function mapData(
   }
 }
 
-interface MapStepProps {
+type MapStepProps = {
   fields: FieldConfig[];
   data: Record<string, string>[];
   columns: CsvColumn[];
   setStep: React.Dispatch<React.SetStateAction<FlowSteps>>;
   enableCustomFields?: boolean;
-}
+};
 
 const mappingSchema = z.object({
   mappings: z.record(z.string()),

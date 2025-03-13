@@ -221,3 +221,9 @@ export type FieldMappingItem = {
 );
 
 export type CsvColumn = { id: string; column: string };
+
+export type UpdateDataType = (
+  rowIndex: string,
+  columnName: string,
+  value: unknown
+) => void;
