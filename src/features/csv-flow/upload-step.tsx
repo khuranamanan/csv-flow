@@ -50,7 +50,7 @@ function UploadStep(props: Props) {
 
   return (
     <div className="flex flex-col h-full gap-4">
-      <div className="grid flex-grow grid-cols-3 gap-6">
+      <div className="grid flex-grow grid-cols-1 gap-6 overflow-y-auto md:grid-cols-3">
         <div className="h-full col-span-2">
           <FileUploader
             maxFileCount={1}

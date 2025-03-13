@@ -23,7 +23,7 @@ function StepIndicator(props: Props) {
         {number}
       </div>
       <div
-        className={cn("flex flex-col", {
+        className={cn("hidden sm:flex flex-col", {
           "text-primary": active,
           "text-muted-foreground": !active,
         })}

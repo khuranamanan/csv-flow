@@ -21,11 +21,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { addErrorsToData, mapCsvRow } from "@/lib/map-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader } from "lucide-react";
 import { nanoid } from "nanoid";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { FlowSteps } from ".";
 import {
   CsvColumn,
   FieldConfig,
@@ -34,11 +38,6 @@ import {
   Meta,
   StepItems,
 } from "./types";
-import { addErrorsToData, mapCsvRow } from "@/lib/map-utils";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState } from "react";
-import { Loader } from "lucide-react";
-import { FlowSteps } from ".";
 
 const IGNORE_FIELD_VALUE = "IGNORE_FIELD";
 const CUSTOM_FIELD_VALUE = "CUSTOM_FIELD";
@@ -237,9 +236,9 @@ function MapStep(props: MapStepProps) {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col min-h-0 space-y-6"
+          className="flex flex-col min-h-0 space-y-6 overflow-x-auto"
         >
-          <ScrollArea>
+          <div className="relative flex-grow w-full overflow-auto text-sm border rounded-md scrollbar-thin scrollbar-thumb-muted-foreground/15 scrollbar-track-muted">
             <Table>
               <TableHeader className="sticky top-0">
                 <TableRow>
@@ -310,7 +309,7 @@ function MapStep(props: MapStepProps) {
                 })}
               </TableBody>
             </Table>
-          </ScrollArea>
+          </div>
           <div className="flex justify-end">
             {processing && (
               <p className="flex items-center gap-2 mr-4 text-sm text-muted-foreground">
