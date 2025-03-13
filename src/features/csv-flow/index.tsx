@@ -5,7 +5,7 @@ import { ReviewStep } from "./review-step";
 import StepIndicator from "./step-indicator";
 import {
   CsvColumn,
-  FieldConfig,
+  CsvFlowProps,
   FieldMappingItem,
   Meta,
   StepItems,
@@ -27,63 +27,6 @@ export type FlowSteps =
       fieldMappings: FieldMappingItem[];
     };
 
-/**
- * Props for the CSV Flow component.
- *
- * @interface CsvFlowProps
- *
- * @property {boolean} open - Indicates whether the CSV flow dialog is open.
- * @property {(v: boolean) => void} setOpen - Callback function to update the open state.
- * @property {FieldConfig[]} fields - An array of field configuration objects used to map CSV columns.
- * Each object should include:
- *   - **columnName**: The internal name of the field (e.g., "Name", "Email").
- *   - **displayName** (optional): A user-friendly name for the field. If omitted, `columnName` is used.
- *   - **required**: A boolean indicating whether the field is mandatory.
- *   - **type**: The expected data type for the field. One of "string", "number", "email", or "date".
- *   - **validations** (optional): An array of validations to apply. Validations can be of the following types:
- *     - **RequiredValidation**: `{ rule: "required", errorMessage?: string, level?: "info" | "warning" | "error" }`
- *     - **UniqueValidation**: `{ rule: "unique", allowEmpty?: boolean, errorMessage?: string, level?: "info" | "warning" | "error" }`
- *     - **RegexValidation**: `{ rule: "regex", value: string, flags?: string, errorMessage: string, level?: "info" | "warning" | "error" }`
- *
- *  **Error Levels:** Default "error".
- *   - **"error"**: A critical validation error that must be resolved before import can proceed.
- *   - **"warning"** or **"info"**: These indicate less critical issues that are only informational and
- *     will not block the import.
- *
- * @property {number} - Optional. Maximum number of data rows to process. Defaults to 1000.
- * @property {number | undefined} - Optional. Maximum allowed file size (in bytes)
- * for the CSV file uploader. Defaults to 2MB.
- *
- * @example
- * import { useState } from "react";
- * import CsvFlow from "./features/csv-flow";
- * import { someFieldConfigs } from "./field-configurations";
- *
- * function App() {
- *   const [open, setOpen] = useState(false);
- *
- *   return (
- *     <>
- *       <button onClick={() => setOpen(true)}>Open CSV Flow</button>
- *       <CsvFlow
- *         open={open}
- *         setOpen={setOpen}
- *         fields={someFieldConfigs}
- *         maxRows={500}         // Optional: override default max rows (default is 1000)
- *         maxFileSize={1024 * 1024} // Optional: override default max file size (default is 2MB)
- *       />
- *     </>
- *   );
- * }
- */
-interface CsvFlowProps {
-  open: boolean;
-  setOpen: (v: boolean) => void;
-  fields: FieldConfig[];
-  maxRows?: number;
-  maxFileSize?: number;
-}
-
 function CsvFlow(props: CsvFlowProps) {
   const {
     open,
@@ -91,6 +34,9 @@ function CsvFlow(props: CsvFlowProps) {
     fields,
     maxRows = 1000,
     maxFileSize = 1024 * 1024 * 2,
+    enableCustomFields = false,
+    customFieldReturnType = "object",
+    onImport,
   } = props;
 
   const [currentStep, setCurrentStep] = useState<FlowSteps>({
@@ -115,6 +61,7 @@ function CsvFlow(props: CsvFlowProps) {
             data={currentStep.data}
             columns={currentStep.columns}
             setStep={setCurrentStep}
+            enableCustomFields={enableCustomFields}
           />
         );
 
@@ -124,12 +71,30 @@ function CsvFlow(props: CsvFlowProps) {
             data={currentStep.data}
             fields={fields}
             fieldMappings={currentStep.fieldMappings}
+            enableCustomFields={enableCustomFields}
+            customFieldReturnType={customFieldReturnType}
+            onImport={onImport}
+            handleCloseDialog={() => {
+              setOpen(false);
+              setCurrentStep({
+                step: StepItems.Upload,
+              });
+            }}
           />
         );
       default:
         return null;
     }
-  }, [currentStep, fields, maxRows, maxFileSize]);
+  }, [
+    currentStep,
+    fields,
+    maxRows,
+    maxFileSize,
+    customFieldReturnType,
+    enableCustomFields,
+    onImport,
+    setOpen,
+  ]);
 
   return (
     <Dialog

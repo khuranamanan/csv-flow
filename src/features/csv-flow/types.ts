@@ -1,3 +1,73 @@
+export type CustomFieldReturnType = "object" | "json" | "flat";
+
+/**
+ * Props for the CSV Flow component.
+ *
+ * @interface CsvFlowProps
+ *
+ * @property {boolean} open - Indicates whether the CSV flow dialog is open.
+ * @property {(v: boolean) => void} setOpen - Callback function to update the open state.
+ * @property {FieldConfig[]} fields - An array of field configuration objects used to map CSV columns.
+ *   Each object should include:
+ *   - **columnName**: The internal name of the field (e.g., "Name", "Email") (Key that will be used when data is returned).
+ *   - **displayName** (optional): A user-friendly name for the field. If omitted, `columnName` is used.
+ *   - **columnRequired**: A boolean indicating whether the field is mandatory.
+ *   - **type**: The expected data type for the field. One of "string", "number", "boolean", "email", or "date".
+ *   - **validations** (optional): An array of validations to apply. Validations can be of the following types:
+ *     - **UniqueValidation**: `{ rule: "unique", allowEmpty?: boolean, errorMessage?: string, level?: "info" | "warning" | "error" }`
+ *     - **RegexValidation**: `{ rule: "regex", value: string, flags?: string, errorMessage: string, level?: "info" | "warning" | "error" }`
+ *     - **CustomValidation**: `{ rule: "custom", validate: (value: unknown, row: Record<string, unknown>) => boolean, errorMessage: string, level?: "info" | "warning" | "error" }`
+ *
+ * **Error Levels:** Default "error".
+ *   - **"error"**: A critical validation error that must be resolved before import can proceed.
+ *   - **"warning"** or **"info"**: These indicate less issues that are only informational and
+ *     will not block the import.
+ *
+ * @property {number} [maxRows] - Optional. Maximum number of data rows to process. Defaults to 1000.
+ * @property {number} [maxFileSize] - Optional. Maximum allowed file size (in bytes)
+ * for the CSV file uploader. Defaults to 2MB.
+ *
+ * @property {boolean} [enableCustomFields] - When true, enables the custom fields functionality in the importer. Default is false.
+ * @property {CustomFieldReturnType} [customFieldReturnType] Specifies how custom fields should be returned in the final data.
+ * - "object": (default) Custom fields are returned as an object attached to the main data (e.g. under a `customFields` key).
+ * - "json": Custom fields are returned as a JSON string.
+ * - "flat": Custom fields are merged directly into the top-level of the final object.
+ * @property onImport - Callback function invoked when the import operation is triggered.
+ *                      It receives an array of objects, where each object represents a row of imported CSV data.
+ *
+ * @example
+ * import { useState } from "react";
+ * import CsvFlow from "./features/csv-flow";
+ * import { someFieldConfigs } from "./field-configurations";
+ *
+ * function App() {
+ *   const [open, setOpen] = useState(false);
+ *
+ *   return (
+ *     <>
+ *       <button onClick={() => setOpen(true)}>Open CSV Flow</button>
+ *       <CsvFlow
+ *         open={open}
+ *         setOpen={setOpen}
+ *         fields={someFieldConfigs}
+ *         maxRows={500}         // Optional: override default max rows (default is 1000)
+ *         maxFileSize={1024 * 1024} // Optional: override default max file size (default is 2MB)
+ *       />
+ *     </>
+ *   );
+ * }
+ */
+export type CsvFlowProps = {
+  open: boolean;
+  setOpen: (v: boolean) => void;
+  fields: FieldConfig[];
+  maxRows?: number;
+  maxFileSize?: number;
+  enableCustomFields?: boolean;
+  customFieldReturnType?: CustomFieldReturnType;
+  onImport: (data: Record<string, unknown>[]) => void;
+};
+
 export enum StepItems {
   Upload = "Upload",
   Map = "Map",

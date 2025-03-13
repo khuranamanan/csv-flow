@@ -37,7 +37,6 @@ function UploadStep(props: Props) {
       const parsedResult = await parseCsv({ file: files[0], limit: maxRows });
       // await new Promise<void>((resolve) => setTimeout(resolve, 10000));
       toast.success("CSV parsed successfully!");
-      console.log(parsedResult);
       setStep({
         step: StepItems.Map,
         ...parsedResult,

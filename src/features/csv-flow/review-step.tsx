@@ -20,16 +20,23 @@ import {
   VirtualItem,
   Virtualizer,
 } from "@tanstack/react-virtual";
-import { Trash } from "lucide-react";
+import { Loader, Trash } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DataTableColumnHeader } from "./data-table-header";
-import { FieldConfig, FieldMappingItem, FieldStatus, Meta } from "./types";
+import {
+  CustomFieldReturnType,
+  FieldConfig,
+  FieldMappingItem,
+  FieldStatus,
+  Meta,
+} from "./types";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
+import { toast } from "sonner";
 
 type UpdateDataType = (
   rowIndex: string,
@@ -121,16 +128,29 @@ interface ReviewStepProps {
   fields: FieldConfig[];
   data: (Record<string, unknown> & Meta)[];
   fieldMappings: FieldMappingItem[];
+  enableCustomFields?: boolean;
+  customFieldReturnType?: CustomFieldReturnType;
+  onImport: (data: Record<string, unknown>[]) => void;
+  handleCloseDialog: () => void;
 }
 
 export function ReviewStep(props: ReviewStepProps) {
-  const { data, fieldMappings, fields } = props;
+  const {
+    data,
+    fieldMappings,
+    fields,
+    enableCustomFields,
+    customFieldReturnType,
+    onImport,
+    handleCloseDialog,
+  } = props;
 
   const [rowData, setRowData] =
     useState<(Record<string, unknown> & Meta)[]>(data);
   const [filterErrors, setFilterErrors] = useState<boolean>(false);
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [isImporting, setIsImporting] = useState<boolean>(false);
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
   const columns: ColumnDef<Record<string, unknown> & Meta>[] = useMemo<
@@ -240,7 +260,6 @@ export function ReviewStep(props: ReviewStepProps) {
           }
           return row;
         });
-        console.log("New Row Data with new errors", newRowData);
         const newDataWithErrors = await addErrorsToData(
           newRowData,
           fields,
@@ -268,6 +287,67 @@ export function ReviewStep(props: ReviewStepProps) {
 
     setRowData(newDataWithErrors);
     setRowSelection({});
+  };
+
+  const handleImport = async () => {
+    const hasErrors = rowData.some(
+      (row) =>
+        row.__errors &&
+        Object.values(row.__errors).some((err) => err.level === "error")
+    );
+
+    if (hasErrors) {
+      toast.error(
+        "There are rows with errors. Please fix them before importing."
+      );
+      return;
+    }
+
+    setIsImporting(true);
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      let cleanedData = rowData.map(({ __index, __errors, ...rest }) => rest);
+
+      if (enableCustomFields) {
+        const customMappings = fieldMappings.filter(
+          (mapping) => mapping.status === FieldStatus.Custom
+        );
+        if (customFieldReturnType === "object") {
+          cleanedData = cleanedData.map((row) => {
+            const customFields: Record<string, unknown> = {};
+            for (const mapping of customMappings) {
+              const key = mapping.mappedValue;
+              if (key in row) {
+                customFields[key] = row[key];
+                delete row[key];
+              }
+            }
+            return { ...row, customFields };
+          });
+        } else if (customFieldReturnType === "json") {
+          cleanedData = cleanedData.map((row) => {
+            const customFields: Record<string, unknown> = {};
+            for (const mapping of customMappings) {
+              const key = mapping.mappedValue;
+              if (key in row) {
+                customFields[key] = row[key];
+                delete row[key];
+              }
+            }
+            return { ...row, customFields: JSON.stringify(customFields) };
+          });
+        }
+      }
+
+      onImport(cleanedData);
+      handleCloseDialog();
+      toast.success("Data imported successfully!");
+      setIsImporting(false);
+    } catch (error) {
+      toast.error("Error importing data: " + (error as Error)?.message);
+      setIsImporting(false);
+    }
   };
 
   const columnSizeVars = useMemo(() => {
@@ -385,7 +465,16 @@ export function ReviewStep(props: ReviewStepProps) {
             )}
           </div>
 
-          <Button>Import</Button>
+          <div className="flex justify-end">
+            {isImporting && (
+              <p className="flex items-center gap-2 mr-4 text-sm text-muted-foreground">
+                <Loader className="size-4 animate-spin" /> Processing...
+              </p>
+            )}
+            <Button disabled={isImporting} onClick={handleImport}>
+              Import
+            </Button>
+          </div>
         </div>
       </div>
     </TooltipProvider>

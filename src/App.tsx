@@ -24,15 +24,15 @@ const csvFlowFieldsConfig: FieldConfig[] = [
         level: "warning",
         errorMessage: "First name must contain only letters",
       },
-      {
-        rule: "custom",
-        validate: (value) => {
-          if (typeof value === "string" && value.length > 5) return false;
-          return true;
-        },
-        errorMessage: "First name must be less than 5 characters",
-        level: "error",
-      },
+      // {
+      //   rule: "custom",
+      //   validate: (value) => {
+      //     if (typeof value === "string" && value.length > 5) return false;
+      //     return true;
+      //   },
+      //   errorMessage: "First name must be less than 5 characters",
+      //   level: "error",
+      // },
     ],
   },
   {
@@ -98,6 +98,10 @@ function App() {
         setOpen={setOpen}
         fields={csvFlowFieldsConfig}
         maxRows={10000}
+        enableCustomFields
+        onImport={(data) =>
+          console.log("Received data in onImport callback:", data)
+        }
       />
     </>
   );

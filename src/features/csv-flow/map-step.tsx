@@ -71,13 +71,16 @@ interface MapStepProps {
   data: Record<string, string>[];
   columns: CsvColumn[];
   setStep: React.Dispatch<React.SetStateAction<FlowSteps>>;
+  enableCustomFields?: boolean;
 }
 
 const mappingSchema = z.object({
   mappings: z.record(z.string()),
 });
 
-function MapStep({ fields, data, columns, setStep }: MapStepProps) {
+function MapStep(props: MapStepProps) {
+  const { fields, data, columns, setStep, enableCustomFields } = props;
+
   const [processing, setProcessing] = useState(false);
 
   const defaultValues = {
@@ -99,9 +102,19 @@ function MapStep({ fields, data, columns, setStep }: MapStepProps) {
       (field.columnRequired ? " *" : ""),
   }));
 
+  const ignoreFieldOption = {
+    value: IGNORE_FIELD_VALUE,
+    label: "Ignore Field",
+  };
+
+  const customFieldOption = {
+    value: CUSTOM_FIELD_VALUE,
+    label: "Custom Field",
+  };
+
   const additionalOptions = [
-    { value: CUSTOM_FIELD_VALUE, label: "Custom Field" },
-    { value: IGNORE_FIELD_VALUE, label: "Ignore Field" },
+    ignoreFieldOption,
+    ...(enableCustomFields ? [customFieldOption] : []),
   ];
 
   const onSubmit = async (values: z.infer<typeof mappingSchema>) => {
@@ -179,7 +192,6 @@ function MapStep({ fields, data, columns, setStep }: MapStepProps) {
       const mappedData = await mapData(fieldMappings, fields, data);
       // await new Promise<void>((resolve) => setTimeout(resolve, 10000));
       toast.success("Data mapped and validated successfully!");
-      console.log("Mapped Data:", mappedData);
       setStep({
         step: StepItems.Review,
         data: mappedData,
