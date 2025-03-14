@@ -238,7 +238,7 @@ function MapStep(props: MapStepProps) {
           onSubmit={form.handleSubmit(onSubmit)}
           className="flex flex-col min-h-0 space-y-6 overflow-x-auto"
         >
-          <div className="relative flex-grow w-full overflow-auto text-sm border rounded-md scrollbar-thin scrollbar-thumb-muted-foreground/15 scrollbar-track-muted">
+          <div className="relative w-full overflow-auto text-sm border rounded-md grow scrollbar-thin scrollbar-thumb-muted-foreground/15 scrollbar-track-muted">
             <Table>
               <TableHeader className="sticky top-0">
                 <TableRow>
@@ -276,7 +276,7 @@ function MapStep(props: MapStepProps) {
                                   onValueChange={field.onChange}
                                   value={field.value}
                                 >
-                                  <SelectTrigger>
+                                  <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Select mapping" />
                                   </SelectTrigger>
                                   <SelectContent>

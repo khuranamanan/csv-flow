@@ -314,7 +314,7 @@ export function ReviewStep(props: ReviewStepProps) {
 
         {/* Table container */}
         <div
-          className="relative flex-grow w-full overflow-auto text-sm border rounded-md scrollbar-thin scrollbar-thumb-muted-foreground/15 scrollbar-track-muted"
+          className="relative grow w-full overflow-auto text-sm border rounded-md scrollbar-thin scrollbar-thumb-muted-foreground/15 scrollbar-track-muted"
           ref={tableContainerRef}
         >
           <table

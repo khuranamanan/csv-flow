@@ -136,7 +136,7 @@ function CsvFlow(props: CsvFlowProps) {
           </div>
         </DialogHeader>
 
-        <div className="flex-grow overflow-hidden">{renderStep()}</div>
+        <div className="grow overflow-hidden">{renderStep()}</div>
       </DialogContent>
     </Dialog>
   );
