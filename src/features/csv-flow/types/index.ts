@@ -74,7 +74,7 @@ export enum StepItems {
   Review = "Review",
 }
 
-export type FieldTypes = "string" | "number" | "boolean" | "email" | "date";
+type FieldTypes = "string" | "number" | "boolean" | "email" | "date";
 
 /**
  * Configuration for a single field in the CSV.
@@ -115,7 +115,7 @@ export interface FieldConfig {
  *
  * @typedef {RequiredValidation | UniqueValidation | RegexValidation} Validation
  */
-export type Validation = UniqueValidation | RegexValidation | CustomValidation;
+type Validation = UniqueValidation | RegexValidation | CustomValidation;
 
 /**
  * Validation to ensure a field's value is unique across the dataset.
@@ -179,7 +179,7 @@ export type CustomValidation = {
  */
 export type ErrorLevel = "info" | "warning" | "error";
 
-export type Info = {
+type Info = {
   message: string;
   level: ErrorLevel;
 };
@@ -195,7 +195,7 @@ export type InfoWithSource = Info & {
 
 export type Meta = { __index: string; __errors?: Error | null };
 export type Error = { [key: string]: InfoWithSource };
-export type Errors = { [id: string]: Error };
+// export type Errors = { [id: string]: Error };
 
 export enum FieldStatus {
   Unmapped = "Unmapped",

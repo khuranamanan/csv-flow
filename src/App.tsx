@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ThemeSwitch } from "./components/theme-switch";
 import CsvFlow from "./features/csv-flow";
 import { FieldConfig } from "./features/csv-flow/types";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { Button } from "./components/ui/button";
 
 const csvFlowFieldsConfig: FieldConfig[] = [
@@ -91,7 +91,7 @@ function App() {
         </div>
       </div>
 
-      <Toaster />
+      <Toaster richColors />
 
       <CsvFlow
         open={open}

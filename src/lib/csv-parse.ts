@@ -2,7 +2,7 @@ import { CsvColumn } from "@/features/csv-flow/types";
 import { nanoid } from "nanoid";
 import Papa from "papaparse";
 
-export interface ParseCsvArgs {
+interface ParseCsvArgs {
   file: File;
   limit: number;
   showEmptyFields?: boolean;
