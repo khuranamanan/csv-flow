@@ -1,4 +1,4 @@
-import { FileUploader } from "@/components/file-uploader";
+import { FileUploader } from "@/features/csv-flow/components/file-uploader";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { parseCsv } from "@/lib/csv-parse";
+import { parseCsv } from "@/features/csv-flow/utils/csv-parse";
 import { formatBytes, toHeaderCase } from "@/lib/utils";
 import { Check, Loader } from "lucide-react";
 import { useState } from "react";

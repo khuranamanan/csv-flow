@@ -21,7 +21,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { addErrorsToData, mapCsvRow } from "@/lib/map-utils";
+import {
+  addErrorsToData,
+  mapCsvRow,
+} from "@/features/csv-flow/utils/map-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader } from "lucide-react";
 import { nanoid } from "nanoid";
