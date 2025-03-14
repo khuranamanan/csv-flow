@@ -1,4 +1,4 @@
-import { CsvColumn } from "@/features/csv-flow/types";
+import { CsvColumn } from "../types";
 import { nanoid } from "nanoid";
 import Papa from "papaparse";
 

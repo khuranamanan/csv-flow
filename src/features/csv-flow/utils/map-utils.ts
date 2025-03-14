@@ -11,7 +11,7 @@ import {
   RegexValidation,
   InfoWithSource,
   ErrorLevel,
-} from "@/features/csv-flow/types";
+} from "../types";
 import { nanoid } from "nanoid";
 import { isValid } from "date-fns";
 

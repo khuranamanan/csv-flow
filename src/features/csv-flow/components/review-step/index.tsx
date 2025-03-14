@@ -2,9 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { addErrorsToData } from "@/features/csv-flow/utils/map-utils";
+import { addErrorsToData } from "../../utils/map-utils";
 import { cn } from "@/lib/utils";
-import { TooltipProvider } from "@radix-ui/react-tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   ColumnDef,
   ColumnFiltersState,

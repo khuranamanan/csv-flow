@@ -108,7 +108,7 @@ function CsvFlow(props: CsvFlowProps) {
       }}
     >
       <DialogContent
-        className="h-[90vh] w-[90vw] max-w-[90vw] flex flex-col"
+        className="h-[90vh] w-[90vw] max-w-[90vw] sm:max-w-[90vw] flex flex-col"
         onInteractOutside={(e) => {
           e.preventDefault();
         }}

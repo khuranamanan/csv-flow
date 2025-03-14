@@ -1,4 +1,4 @@
-import { FileUploader } from "@/features/csv-flow/components/file-uploader";
+import { FileUploader } from "../components/file-uploader";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
@@ -10,13 +10,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { parseCsv } from "@/features/csv-flow/utils/csv-parse";
-import { formatBytes, toHeaderCase } from "@/lib/utils";
+import { parseCsv } from "../utils/csv-parse";
 import { Check, Loader } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { FlowSteps } from "..";
 import { FieldConfig, StepItems } from "../types";
+import { formatBytes, toHeaderCase } from "../utils/helpers";
 
 type Props = {
   fields: FieldConfig[];

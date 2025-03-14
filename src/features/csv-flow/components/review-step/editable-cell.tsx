@@ -1,12 +1,13 @@
 import { Row } from "@tanstack/react-table";
 import { Meta, UpdateDataType } from "../../types";
 import { useEffect, useState } from "react";
-import { cn, toHeaderCase } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { toHeaderCase } from "../../utils/helpers";
 
 type Props = {
   initialValue: unknown;

@@ -1,0 +1,121 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "csv-flow",
+  "homepage": "https://csv-flow.vercel.app/",
+  "items": [
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "csv-flow",
+      "type": "registry:block",
+      "title": "CSV Flow",
+      "description": "A Component that makes importing CSV files into applications easier with validations.",
+      "author": "Manan Khurana <khuranamanan12@gmail.com>",
+      "registryDependencies": [
+        "button",
+        "checkbox",
+        "dialog",
+        "form",
+        "label",
+        "progress",
+        "scroll-area",
+        "select",
+        "separator",
+        "sonner",
+        "switch",
+        "table",
+        "tooltip"
+      ],
+      "dependencies": [
+        "date-fns",
+        "nanoid",
+        "papaparse",
+        "@types/papaparse",
+        "react-dropzone",
+        "@tanstack/react-table",
+        "@tanstack/react-virtual"
+      ],
+      "files": [
+        {
+          "path": "src/features/csv-flow/index.tsx",
+          "type": "registry:block",
+          "target": "components/csv-flow/index.tsx"
+        },
+        {
+          "path": "src/features/csv-flow/types/index.ts",
+          "type": "registry:block",
+          "target": "components/csv-flow/types/index.ts"
+        },
+        {
+          "path": "src/features/csv-flow/components/file-uploader.tsx",
+          "type": "registry:block",
+          "target": "components/csv-flow/components/file-uploader.tsx"
+        },
+        {
+          "path": "src/features/csv-flow/hooks/use-callback-ref.tsx",
+          "type": "registry:block",
+          "target": "components/csv-flow/hooks/use-callback-ref.tsx"
+        },
+        {
+          "path": "src/features/csv-flow/hooks/use-controllable-state.tsx",
+          "type": "registry:block",
+          "target": "components/csv-flow/hooks/use-controllable-state.tsx"
+        },
+        {
+          "path": "src/features/csv-flow/components/upload-step.tsx",
+          "type": "registry:block",
+          "target": "components/csv-flow/components/upload-step.tsx"
+        },
+        {
+          "path": "src/features/csv-flow/components/step-indicator.tsx",
+          "type": "registry:block",
+          "target": "components/csv-flow/components/step-indicator.tsx"
+        },
+        {
+          "path": "src/features/csv-flow/components/map-step.tsx",
+          "type": "registry:block",
+          "target": "components/csv-flow/components/map-step.tsx"
+        },
+        {
+          "path": "src/features/csv-flow/utils/csv-parse.ts",
+          "type": "registry:block",
+          "target": "components/csv-flow/utils/csv-parse.ts"
+        },
+        {
+          "path": "src/features/csv-flow/utils/map-utils.ts",
+          "type": "registry:block",
+          "target": "components/csv-flow/utils/map-utils.ts"
+        },
+        {
+          "path": "src/features/csv-flow/utils/helpers.ts",
+          "type": "registry:block",
+          "target": "components/csv-flow/utils/helpers.ts"
+        },
+        {
+          "path": "src/features/csv-flow/components/review-step/index.tsx",
+          "type": "registry:block",
+          "target": "components/csv-flow/components/review-step/index.tsx"
+        },
+        {
+          "path": "src/features/csv-flow/components/review-step/data-table-header.tsx",
+          "type": "registry:block",
+          "target": "components/csv-flow/components/review-step/data-table-header.tsx"
+        },
+        {
+          "path": "src/features/csv-flow/components/review-step/editable-cell.tsx",
+          "type": "registry:block",
+          "target": "components/csv-flow/components/review-step/editable-cell.tsx"
+        },
+        {
+          "path": "src/features/csv-flow/components/review-step/table-body-row.tsx",
+          "type": "registry:block",
+          "target": "components/csv-flow/components/review-step/table-body-row.tsx"
+        },
+        {
+          "path": "src/features/csv-flow/components/review-step/table-body.tsx",
+          "type": "registry:block",
+          "target": "components/csv-flow/components/review-step/table-body.tsx"
+        }
+      ]
+    }
+  ]
+}

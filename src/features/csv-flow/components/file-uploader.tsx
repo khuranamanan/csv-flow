@@ -9,8 +9,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useControllableState } from "@/features/csv-flow/hooks/use-controllable-state";
-import { cn, formatBytes } from "@/lib/utils";
+import { useControllableState } from "../hooks/use-controllable-state";
+import { cn } from "@/lib/utils";
+import { formatBytes } from "../utils/helpers";
 
 interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
