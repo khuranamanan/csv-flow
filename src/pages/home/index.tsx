@@ -23,7 +23,7 @@ function HeroSection() {
         <div className="w-3/4 rounded-full h-3/4 bg-primary/5 blur-3xl" />
       </div>
       <div className="container relative px-4 md:px-6">
-        <div className="grid gap-6 lg:grid-cols-[1fr_600px] lg:gap-12 xl:grid-cols-[1fr_600px]">
+        <div className="grid gap-6 lg:gap-12">
           <div className="flex flex-col justify-center space-y-4">
             <div className="space-y-2">
               <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
@@ -53,11 +53,9 @@ function HeroSection() {
           <div className="relative overflow-hidden border shadow-2xl rounded-xl border-border/40 backdrop-blur-sm bg-background/30">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-background/10 -z-10" />
             <img
-              src="/placeholder.svg?height=550&width=550"
-              width={550}
-              height={550}
+              src="/hero-img.png"
               alt="CSV Flow interface showing mapped data with error indicators and editable cells"
-              className="object-cover mx-auto overflow-hidden aspect-video sm:w-full lg:order-last"
+              className="object-cover mx-auto overflow-hidden sm:w-full lg:order-last"
             />
           </div>
         </div>
