@@ -38,6 +38,15 @@ const csvFlowFieldsConfig: FieldConfig[] = [
     displayName: "Last Name",
     columnRequired: true,
     type: "string",
+    validations: [
+      {
+        rule: "regex",
+        value: "^[a-zA-Z]+(?:[\\s-][a-zA-Z]+)*$",
+        level: "info",
+        errorMessage:
+          "Last name ideally should contain only letters, spaces, or hyphens",
+      },
+    ],
   },
   {
     columnName: "Email",
@@ -48,6 +57,7 @@ const csvFlowFieldsConfig: FieldConfig[] = [
       {
         rule: "unique",
         level: "warning",
+        allowEmpty: true,
         errorMessage: "Email must be unique",
       },
     ],
@@ -61,6 +71,7 @@ const csvFlowFieldsConfig: FieldConfig[] = [
       {
         rule: "unique",
         level: "warning",
+        allowEmpty: true,
         errorMessage: "Phone must be unique",
       },
       {
@@ -68,6 +79,16 @@ const csvFlowFieldsConfig: FieldConfig[] = [
         value: "^\\+[1-9]\\d{1,14}$",
         errorMessage: "Phone number should be of E.164 format",
         level: "error",
+      },
+      {
+        rule: "custom",
+        validate: (value: unknown) => {
+          if (typeof value !== "string" || value.trim() === "") return true;
+          const digits = value.replace(/\D/g, "");
+          return digits.length >= 8;
+        },
+        errorMessage: "Phone number should have at least 8 digits",
+        level: "warning",
       },
     ],
   },
@@ -88,6 +109,17 @@ const csvFlowFieldsConfig: FieldConfig[] = [
     displayName: "City",
     columnRequired: false,
     type: "string",
+    validations: [
+      {
+        rule: "custom",
+        validate: (value: unknown) => {
+          if (typeof value !== "string" || value.trim() === "") return true;
+          return value.charAt(0) === value.charAt(0).toUpperCase();
+        },
+        errorMessage: "City names should start with a capital letter",
+        level: "info",
+      },
+    ],
   },
   {
     columnName: "country",
@@ -115,7 +147,7 @@ export function DemoPage() {
     setOpen,
     fields: csvFlowFieldsConfig,
     onImport: handleImport,
-    maxRows: 1000,
+    maxRows: 1100,
     maxFileSize: 2097152, // 2MB
     enableCustomFields: true,
     customFieldReturnType: "object",
@@ -182,7 +214,9 @@ export function DemoPage() {
               to contain only letters (warning level).
             </li>
             <li>
-              <strong>Last Name:</strong> Required string.
+              <strong>Last Name:</strong> While required, it comes with an
+              info-level guideline recommending only letters, spaces, or
+              hyphens.
             </li>
             <li>
               <strong>Email:</strong> Required email (built-in email validation)
@@ -190,7 +224,9 @@ export function DemoPage() {
             </li>
             <li>
               <strong>Phone:</strong> Optional string that must follow E.164
-              format and be unique.
+              format and be unique and must have at least 8 digits
+              (warning-level), plus a uniqueness check that ignores empty
+              values.
             </li>
             <li>
               <strong>Date of Birth:</strong> Required date.
@@ -203,7 +239,8 @@ export function DemoPage() {
               ensuring a non-negative value.
             </li>
             <li>
-              <strong>City:</strong> Optional string.
+              <strong>City:</strong> An optional field that suggests the city
+              name should start with a capital letter (info-level).
             </li>
             <li>
               <strong>Country:</strong> Optional string.

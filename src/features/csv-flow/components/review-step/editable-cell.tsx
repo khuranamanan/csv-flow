@@ -37,6 +37,8 @@ export function EditableCell(props: Props) {
   const isWarning = !!hasError && hasError.level === "warning";
   const isInfo = !!hasError && hasError.level === "info";
 
+  const displayValue = typeof value === "boolean" ? String(value) : value;
+
   return (
     <div
       className={cn("border border-transparent", {
@@ -51,7 +53,7 @@ export function EditableCell(props: Props) {
             <input
               id={`${columnId}-${row.original.__index}}`}
               className="w-full px-3 py-1 leading-normal align-middle bg-transparent text-text focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              value={String(value)}
+              value={displayValue ? String(displayValue) : ""}
               onChange={(e) => setValue(e.target.value)}
               onBlur={onBlur}
             />
@@ -69,7 +71,7 @@ export function EditableCell(props: Props) {
         <input
           id={`${columnId}-${row.original.__index}}`}
           className="w-full px-3 py-1 leading-normal align-middle bg-transparent text-text focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          value={String(value)}
+          value={displayValue ? String(displayValue) : ""}
           onChange={(e) => setValue(e.target.value)}
           onBlur={onBlur}
         />

@@ -83,10 +83,13 @@ function MapStep(props: MapStepProps) {
   const [processing, setProcessing] = useState(false);
 
   const defaultValues = {
-    mappings: columns.reduce((acc, col) => {
-      acc[col.id] = IGNORE_FIELD_VALUE;
-      return acc;
-    }, {} as Record<string, string>),
+    mappings: columns.reduce(
+      (acc, col) => {
+        acc[col.id] = IGNORE_FIELD_VALUE;
+        return acc;
+      },
+      {} as Record<string, string>
+    ),
   };
 
   const form = useForm<z.infer<typeof mappingSchema>>({
@@ -225,8 +228,8 @@ function MapStep(props: MapStepProps) {
                 {index < fields.length - 2
                   ? ", "
                   : index === fields.length - 2
-                  ? " & "
-                  : ""}
+                    ? " & "
+                    : ""}
               </span>
             ))
           )}

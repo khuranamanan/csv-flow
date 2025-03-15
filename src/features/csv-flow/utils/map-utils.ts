@@ -41,29 +41,50 @@ function getBaseSchema(field: FieldConfig): ZodTypeAny {
   switch (field.type) {
     case "number":
       return z.preprocess((val) => {
-        if (typeof val === "string" && val.trim() !== "") {
+        if (typeof val === "string") {
+          if (!val.trim()) return undefined;
           const num = Number(val);
           return isNaN(num) ? val : num;
         }
         return val;
-      }, z.number());
+      }, z.number().optional());
     case "boolean":
       return z.preprocess((val) => {
         if (typeof val === "string") {
+          if (!val.trim()) return undefined;
           const lower = val.toLowerCase();
           if (lower === "true") return true;
           if (lower === "false") return false;
         }
         return val;
-      }, z.boolean());
+      }, z.boolean().optional());
     case "date":
-      return z.string().refine((val) => isValid(new Date(val)), {
-        message: "Must be a valid date",
-      });
+      return z.preprocess(
+        (val) => {
+          if (typeof val === "string") {
+            if (!val.trim()) return undefined;
+            return val;
+          }
+          return val;
+        },
+        z
+          .string()
+          .refine((val) => isValid(new Date(val)), {
+            message: "Must be a valid date",
+          })
+          .optional()
+      );
     case "email":
-      return z.string().email();
+      return z.preprocess((val) => {
+        if (typeof val === "string") {
+          if (!val.trim()) return undefined;
+          return val.trim();
+        }
+        return val;
+      }, z.string().email().optional());
     default:
-      return z.string();
+      // For strings, we allow empty strings, because an empty string might be valid if the field isn't required.
+      return z.string().optional();
   }
 }
 
@@ -85,9 +106,10 @@ function getFieldSchema(field: FieldConfig): ZodTypeAny {
         { message: "This field is required" }
       );
     }
-  } else {
-    schema = schema.optional();
   }
+  // else {
+  //   schema = schema.optional();
+  // }
 
   return schema;
 }
@@ -161,10 +183,17 @@ export async function addErrorsToData(
       }
     });
 
-    // Custom and Regex Validations
+    // Custom and Regex Validations (only if field is mapped)
     fields.forEach((field) => {
       if (!isFieldMapped(field)) return;
 
+      // Skip validations if the field is empty and not required.
+      const fieldValue = newRow[field.columnName];
+      const isEmpty =
+        fieldValue === undefined || fieldValue === null || fieldValue === "";
+      if (isEmpty && !field.columnRequired) return;
+
+      // Custom Validations.
       const customValidations = field.validations?.filter(
         (v) => v.rule === "custom"
       ) as CustomValidation[] | undefined;
@@ -185,6 +214,7 @@ export async function addErrorsToData(
         });
       }
 
+      // Regex Validations.
       const regexValidations = field.validations?.filter(
         (v) => v.rule === "regex"
       ) as RegexValidation[] | undefined;
