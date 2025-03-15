@@ -26,10 +26,10 @@ export function Header() {
               Home
             </Link>
             <Link
-              to="/playground"
+              to="/demo"
               className="text-sm font-medium transition-colors hover:text-primary"
             >
-              Playground
+              Demo
             </Link>
             <Link
               to="/docs"
@@ -82,10 +82,10 @@ export function Header() {
                   Home
                 </Link>
                 <Link
-                  to="/playground"
+                  to="/demo"
                   className="text-sm font-medium transition-colors hover:text-primary"
                 >
-                  Playground
+                  Demo
                 </Link>
                 <Link
                   to="/docs"

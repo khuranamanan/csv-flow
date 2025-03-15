@@ -43,9 +43,9 @@ function HeroSection() {
                   <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
                 </Button>
               </a>
-              <Link to="/playground">
+              <Link to="/demo">
                 <Button variant="outline" size="lg" className="rounded-full">
-                  Try the Playground
+                  See the Demo
                 </Button>
               </Link>
             </div>
@@ -204,22 +204,37 @@ function PlaygroundSection() {
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
           <div className="inline-flex items-center px-3 py-1 mb-2 text-sm border rounded-full shadow-sm border-border/40 bg-background/95 backdrop-blur-md">
-            <span className="font-medium text-primary">Playground</span>
+            <span className="font-medium text-primary">Interactive Demo</span>
           </div>
           <div className="space-y-2">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-              Try it Out
+              Explore our interactive demo to see CSV Flow in action
             </h2>
-            <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              Explore our interactive playground to see CSV Flow in action.
-              Tweak settings, experiment with field mappings, and watch how your
-              CSV data is processed in real time.
-            </p>
+            <div className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed mx-auto">
+              <p>With our demo, you can:</p>
+              <ul className="mt-2 text-center list-disc list-inside">
+                <li>
+                  <strong>Import Sample Data:</strong> Open the CSV Flow
+                  importer, use a sample CSV file from our public folder, and
+                  see how your data is processed.
+                </li>
+                <li>
+                  <strong>Review Results:</strong> Immediately view the cleaned,
+                  validated, and processed data, so you know exactly what will
+                  be sent to your backend.
+                </li>
+                <li>
+                  <strong>Explore the Component:</strong> Get a feel for CSV
+                  Flow’s features, including custom field mapping, advanced
+                  validations, and seamless React integration.
+                </li>
+              </ul>
+            </div>
           </div>
           <div className="flex gap-2 mt-8">
-            <Link to="/playground">
+            <Link to="/demo">
               <Button className="rounded-full group">
-                Go to Playground
+                See the Demo
                 <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>

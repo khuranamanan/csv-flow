@@ -11,21 +11,21 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as PlaygroundImport } from './routes/playground'
 import { Route as DocsImport } from './routes/docs'
+import { Route as DemoImport } from './routes/demo'
 import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
 
-const PlaygroundRoute = PlaygroundImport.update({
-  id: '/playground',
-  path: '/playground',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const DocsRoute = DocsImport.update({
   id: '/docs',
   path: '/docs',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const DemoRoute = DemoImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -46,18 +46,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoImport
+      parentRoute: typeof rootRoute
+    }
     '/docs': {
       id: '/docs'
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof DocsImport
-      parentRoute: typeof rootRoute
-    }
-    '/playground': {
-      id: '/playground'
-      path: '/playground'
-      fullPath: '/playground'
-      preLoaderRoute: typeof PlaygroundImport
       parentRoute: typeof rootRoute
     }
   }
@@ -67,42 +67,42 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/demo': typeof DemoRoute
   '/docs': typeof DocsRoute
-  '/playground': typeof PlaygroundRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/demo': typeof DemoRoute
   '/docs': typeof DocsRoute
-  '/playground': typeof PlaygroundRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/demo': typeof DemoRoute
   '/docs': typeof DocsRoute
-  '/playground': typeof PlaygroundRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/docs' | '/playground'
+  fullPaths: '/' | '/demo' | '/docs'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/docs' | '/playground'
-  id: '__root__' | '/' | '/docs' | '/playground'
+  to: '/' | '/demo' | '/docs'
+  id: '__root__' | '/' | '/demo' | '/docs'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DemoRoute: typeof DemoRoute
   DocsRoute: typeof DocsRoute
-  PlaygroundRoute: typeof PlaygroundRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DemoRoute: DemoRoute,
   DocsRoute: DocsRoute,
-  PlaygroundRoute: PlaygroundRoute,
 }
 
 export const routeTree = rootRoute
@@ -116,18 +116,18 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/docs",
-        "/playground"
+        "/demo",
+        "/docs"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
+    "/demo": {
+      "filePath": "demo.tsx"
+    },
     "/docs": {
       "filePath": "docs.tsx"
-    },
-    "/playground": {
-      "filePath": "playground.tsx"
     }
   }
 }

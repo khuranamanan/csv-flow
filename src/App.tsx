@@ -11,6 +11,14 @@ const csvFlowFieldsConfig: FieldConfig[] = [
     displayName: "ID",
     columnRequired: true,
     type: "number",
+    validations: [
+      {
+        rule: "custom",
+        validate: (value: unknown) => typeof value === "number" && value > 0,
+        errorMessage: "ID must be a positive number",
+        level: "error",
+      },
+    ],
   },
   {
     columnName: "firstName",
@@ -24,15 +32,6 @@ const csvFlowFieldsConfig: FieldConfig[] = [
         level: "warning",
         errorMessage: "First name must contain only letters",
       },
-      // {
-      //   rule: "custom",
-      //   validate: (value) => {
-      //     if (typeof value === "string" && value.length > 5) return false;
-      //     return true;
-      //   },
-      //   errorMessage: "First name must be less than 5 characters",
-      //   level: "error",
-      // },
     ],
   },
   {
@@ -46,7 +45,13 @@ const csvFlowFieldsConfig: FieldConfig[] = [
     displayName: "Email",
     columnRequired: true,
     type: "email",
-    validations: [{ rule: "unique", level: "warning" }],
+    validations: [
+      {
+        rule: "unique",
+        level: "warning",
+        errorMessage: "Email must be unique",
+      },
+    ],
   },
   {
     columnName: "Phone",
@@ -54,25 +59,56 @@ const csvFlowFieldsConfig: FieldConfig[] = [
     columnRequired: false,
     type: "string",
     validations: [
-      { rule: "unique" },
+      {
+        rule: "unique",
+        level: "warning",
+        errorMessage: "Phone must be unique",
+      },
       {
         rule: "regex",
-        value: "^[0-9]+$",
-        errorMessage: "Phone number must contain only numbers",
+        value: "^\\+[1-9]\\d{1,14}$",
+        errorMessage: "Phone number should be of E.164 format",
+        level: "error",
       },
     ],
   },
   {
-    columnName: "date",
+    columnName: "dob",
+    displayName: "Date of Birth",
     columnRequired: true,
     type: "date",
-    displayName: "Date",
   },
   {
-    columnName: "Boolean",
+    columnName: "isGraduate",
+    displayName: "Has Graduated",
     columnRequired: true,
     type: "boolean",
-    displayName: "Boolean",
+  },
+  {
+    columnName: "age",
+    displayName: "Age",
+    columnRequired: false,
+    type: "number",
+    validations: [
+      {
+        rule: "custom",
+        validate: (value: unknown) => typeof value === "number" && value >= 0,
+        errorMessage: "Age must be a non-negative number",
+        level: "error",
+      },
+    ],
+  },
+  {
+    columnName: "city",
+    displayName: "City",
+    columnRequired: false,
+    type: "string",
+  },
+  {
+    columnName: "country",
+    displayName: "Country",
+    columnRequired: false,
+    type: "string",
   },
 ];
 

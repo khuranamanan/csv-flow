@@ -6,7 +6,7 @@ import { ThemeProvider } from "./context/theme-context.tsx";
 import { routeTree } from "./routeTree.gen";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 
-const router = createRouter({ routeTree });
+const router = createRouter({ routeTree, scrollRestoration: true });
 
 declare module "@tanstack/react-router" {
   interface Register {
