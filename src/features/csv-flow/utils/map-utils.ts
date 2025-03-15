@@ -83,7 +83,6 @@ function getBaseSchema(field: FieldConfig): ZodTypeAny {
         return val;
       }, z.string().email().optional());
     default:
-      // For strings, we allow empty strings, because an empty string might be valid if the field isn't required.
       return z.string().optional();
   }
 }
@@ -107,9 +106,6 @@ function getFieldSchema(field: FieldConfig): ZodTypeAny {
       );
     }
   }
-  // else {
-  //   schema = schema.optional();
-  // }
 
   return schema;
 }
