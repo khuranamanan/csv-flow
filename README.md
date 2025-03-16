@@ -33,7 +33,13 @@ Install CSV Flow using the shadcn CLI integration:
 pnpm dlx shadcn@latest add https://csv-flow.vercel.app/r/csv-flow.json
 ```
 
-## This command installs CSV Flow along with its configuration, ensuring seamless integration with your shadcn-based design system.
+This command installs CSV Flow along with its configuration, ensuring seamless integration with your shadcn-based design system.
+
+---
+
+## Demo
+
+https://youtu.be/f98MbYU-UiY?si=WI3ZQXlz-euifrFF
 
 ## Usage
 
