@@ -55,7 +55,12 @@ function HeroSection() {
             <img
               src="/hero-img.png"
               alt="CSV Flow interface showing mapped data with error indicators and editable cells"
-              className="object-cover mx-auto overflow-hidden sm:w-full lg:order-last"
+              className="object-cover mx-auto overflow-hidden sm:w-full lg:order-last dark:hidden"
+            />
+            <img
+              src="/hero-img-dark.png"
+              alt="CSV Flow interface showing mapped data with error indicators and editable cells"
+              className="hidden object-cover mx-auto overflow-hidden sm:w-full lg:order-last dark:inline"
             />
           </div>
         </div>
