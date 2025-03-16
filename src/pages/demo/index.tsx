@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { CodeBlock } from "@/components/code-block";
 import { Button } from "@/components/ui/button";
 import CsvFlow from "@/features/csv-flow";
-import { CsvFlowProps, FieldConfig } from "@/features/csv-flow/types";
+import type { CsvFlowProps, FieldConfig } from "@/features/csv-flow/types";
+import JsonView from "@uiw/react-json-view";
+import { githubLightTheme } from "@uiw/react-json-view/githubLight";
+import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
+import { useTheme } from "@/context/theme-context";
 
 const csvFlowFieldsConfig: FieldConfig[] = [
   {
@@ -135,6 +138,7 @@ export function DemoPage() {
   const [importedData, setImportedData] = useState<Record<string, unknown>[]>(
     []
   );
+  const { resolvedTheme } = useTheme();
 
   // onImport callback for CSV Flow: update imported data.
   const handleImport = (data: Record<string, unknown>[]) => {
@@ -165,12 +169,12 @@ export function DemoPage() {
   };
 
   return (
-    <div className="container p-6 mx-auto space-y-8">
+    <div className="container max-w-full px-4 py-6 mx-auto space-y-8 overflow-x-hidden">
       <h1 className="text-3xl font-bold">CSV Flow Demo</h1>
       <div className="grid gap-8 md:grid-cols-2">
         {/* Left Column: Demo Area */}
-        <div className="flex flex-col space-y-6">
-          <div className="p-6 border rounded shadow-sm bg-background/30">
+        <div className="flex flex-col w-full min-w-0 space-y-6">
+          <div className="min-w-0 p-4 border rounded shadow-sm sm:p-6 bg-background/30">
             <h2 className="mb-4 text-2xl font-bold">Demo</h2>
             <p className="mb-4 text-muted-foreground">
               Click "Open CSV Flow" to open the importer. After importing, the
@@ -186,25 +190,35 @@ export function DemoPage() {
             <CsvFlow {...csvFlowProps} />
           </div>
 
-          <div className="p-6 border rounded shadow-sm bg-background/30">
+          <div className="min-w-0 p-4 border rounded shadow-sm sm:p-6 bg-background/30">
             <h2 className="mb-4 text-2xl font-bold">Imported Data</h2>
             {importedData.length === 0 ? (
               <p className="text-muted-foreground">No data imported yet.</p>
             ) : (
-              <pre className="p-4 whitespace-pre-wrap bg-gray-100 rounded">
-                {JSON.stringify(importedData, null, 2)}
-              </pre>
+              <div className="overflow-auto">
+                <JsonView
+                  value={importedData}
+                  style={
+                    resolvedTheme === "dark"
+                      ? githubDarkTheme
+                      : githubLightTheme
+                  }
+                  className="w-full p-4 break-words"
+                  collapsed
+                  shortenTextAfterLength={10}
+                />
+              </div>
             )}
           </div>
         </div>
 
         {/* Right Column: Configuration & Explanation */}
-        <div className="p-6 border rounded shadow-sm bg-background/30">
+        <div className="w-full min-w-0 p-4 border rounded shadow-sm sm:p-6 bg-background/30">
           <h2 className="mb-2 text-2xl font-bold">Configuration</h2>
           <p className="mb-4 text-muted-foreground">
             This CSV Flow configuration defines the following fields:
           </p>
-          <ul className="mb-4 ml-6 list-disc text-muted-foreground">
+          <ul className="w-full mb-4 ml-6 list-disc text-muted-foregroup-enabled:">
             <li>
               <strong>ID:</strong> Required number with a custom validation
               ensuring a positive value.
@@ -235,10 +249,6 @@ export function DemoPage() {
               <strong>Has Graduated:</strong> Required boolean.
             </li>
             <li>
-              <strong>Age:</strong> Optional number with a custom validation
-              ensuring a non-negative value.
-            </li>
-            <li>
               <strong>City:</strong> An optional field that suggests the city
               name should start with a capital letter (info-level).
             </li>
@@ -246,10 +256,15 @@ export function DemoPage() {
               <strong>Country:</strong> Optional string.
             </li>
           </ul>
-          <CodeBlock
-            language="ts"
-            code={JSON.stringify(csvFlowProps, null, 2)}
-          />
+          <div className="overflow-auto">
+            <JsonView
+              value={csvFlowProps}
+              style={
+                resolvedTheme === "dark" ? githubDarkTheme : githubLightTheme
+              }
+              className="p-4"
+            />
+          </div>
         </div>
       </div>
     </div>
