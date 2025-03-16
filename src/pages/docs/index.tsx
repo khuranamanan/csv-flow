@@ -422,7 +422,8 @@ export default App;`}
                   validations?: Validation[]
                 </code>
                 <p className="mt-1 text-muted-foreground">
-                  Array of validations applied to the field. Validations can be:
+                  An array of validations applied to the field. Validations can
+                  be one of:
                 </p>
                 <ul className="pl-6 mt-2 space-y-2 list-disc text-muted-foreground">
                   <li>
@@ -430,18 +431,83 @@ export default App;`}
                     <code className="bg-muted/50 px-1 py-0.5 rounded text-xs">
                       unique
                     </code>
+                    <p className="mt-1 text-muted-foreground">
+                      Ensures that the field's value is unique across the
+                      dataset.
+                      <br />
+                      <strong>Properties:</strong>
+                      <ul className="pl-4 mt-1 text-sm list-disc">
+                        <li>
+                          <code>allowEmpty?: boolean</code> - If true, empty
+                          values are ignored in the uniqueness check.
+                        </li>
+                        <li>
+                          <code>errorMessage?: string</code> - Optional custom
+                          error message.
+                        </li>
+                        <li>
+                          <code>level?: "info" | "warning" | "error"</code> -
+                          The severity level of the error.
+                        </li>
+                      </ul>
+                    </p>
                   </li>
                   <li>
                     <strong>RegexValidation:</strong>{" "}
                     <code className="bg-muted/50 px-1 py-0.5 rounded text-xs">
                       regex
                     </code>
+                    <p className="mt-1 text-muted-foreground">
+                      Validates the field value against a regular expression.
+                      <br />
+                      <strong>Properties:</strong>
+                      <ul className="pl-4 mt-1 text-sm list-disc">
+                        <li>
+                          <code>value: string</code> - The regex pattern to test
+                          against.
+                        </li>
+                        <li>
+                          <code>flags?: string</code> - Optional regex flags
+                          (e.g., "i" for case-insensitive).
+                        </li>
+                        <li>
+                          <code>errorMessage: string</code> - The error message
+                          if validation fails.
+                        </li>
+                        <li>
+                          <code>level?: "info" | "warning" | "error"</code> -
+                          The severity level.
+                        </li>
+                      </ul>
+                    </p>
                   </li>
                   <li>
                     <strong>CustomValidation:</strong>{" "}
                     <code className="bg-muted/50 px-1 py-0.5 rounded text-xs">
                       custom
                     </code>
+                    <p className="mt-1 text-muted-foreground">
+                      Implements custom validation logic via a function.
+                      <br />
+                      <strong>Properties:</strong>
+                      <ul className="pl-4 mt-1 text-sm list-disc">
+                        <li>
+                          <code>
+                            validate: (value: unknown, row: Record&lt;string,
+                            unknown&gt;) =&gt; boolean
+                          </code>{" "}
+                          - Function that returns true if valid.
+                        </li>
+                        <li>
+                          <code>errorMessage: string</code> - The error message
+                          when validation fails.
+                        </li>
+                        <li>
+                          <code>level?: "info" | "warning" | "error"</code> -
+                          The severity level.
+                        </li>
+                      </ul>
+                    </p>
                   </li>
                 </ul>
               </li>
