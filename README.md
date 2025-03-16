@@ -17,9 +17,6 @@
   - **Unique Validations:** Prevent duplicate entries with unique field checks.
   - **Error Prioritization:** Critical errors (level `"error"`) override warnings and info messages.
 
-- **Efficient Data Processing**  
-  Optimized for large datasets with virtualization and optional Web Worker support for heavy processing.
-
 - **Seamless React Integration**  
   Designed as a React component with customizable props for effortless integration into your projects.
 
@@ -32,8 +29,6 @@ Install CSV Flow using the shadcn CLI integration:
 ```bash
 pnpm dlx shadcn@latest add https://csv-flow.vercel.app/r/csv-flow.json
 ```
-
-This command installs CSV Flow along with its configuration, ensuring seamless integration with your shadcn-based design system.
 
 ---
 
