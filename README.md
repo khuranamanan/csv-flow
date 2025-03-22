@@ -1,6 +1,6 @@
 # CSV Flow
 
-**CSV Flow** is an open-source React component for importing CSV files into your applications. It allows you to map CSV columns to custom fields, validate data with advanced rules, and process your CSV data seamlessly. CSV Flow is designed to work with modern React applications and integrates with popular libraries like shadcn/ui, React Table, and TanStack Virtualizer.
+**CSV Flow** is an open-source React component for importing CSV files into your applications. It allows you to map CSV columns to custom fields, validate data with advanced rules, and process your CSV data seamlessly. CSV Flow is designed to work with modern React applications and uses popular libraries like shadcn/ui, React Table, and TanStack Virtualizer.
 
 ---
 
@@ -15,6 +15,7 @@
   - **Type Validation & Coercion:** Automatically convert CSV strings into numbers, booleans, dates, or emails.
   - **Regex & Custom Validations:** Apply regex rules or custom validation functions to ensure data quality.
   - **Unique Validations:** Prevent duplicate entries with unique field checks.
+  - **Custom Validation:** Implements custom validation logic via a function.
   - **Error Prioritization:** Critical errors (level `"error"`) override warnings and info messages.
 
 - **Seamless React Integration**  
