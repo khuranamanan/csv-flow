@@ -212,6 +212,7 @@ export type FieldMappingItem = {
       status: FieldStatus.Mapped;
       mappedValue: string;
       type: FieldTypes;
+      displayName?: string;
     }
   | {
       status: FieldStatus.Custom;

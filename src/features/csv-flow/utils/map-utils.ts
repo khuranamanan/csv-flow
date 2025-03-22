@@ -35,12 +35,16 @@ export function mapCsvRow(
 }
 
 /**
- * Returns a base Zod schema for a field based on its type.
+ * Returns a Zod schema for a field based on its type and requirements.
+ * Handles both base type validation and required field validation.
  */
-function getBaseSchema(field: FieldConfig): ZodTypeAny {
+function getFieldSchema(field: FieldConfig): ZodTypeAny {
+  let schema: ZodTypeAny;
+
+  // Create base schema based on field type
   switch (field.type) {
     case "number":
-      return z.preprocess((val) => {
+      schema = z.preprocess((val) => {
         if (typeof val === "string") {
           if (!val.trim()) return undefined;
           const num = Number(val);
@@ -48,8 +52,9 @@ function getBaseSchema(field: FieldConfig): ZodTypeAny {
         }
         return val;
       }, z.number().optional());
+      break;
     case "boolean":
-      return z.preprocess((val) => {
+      schema = z.preprocess((val) => {
         if (typeof val === "string") {
           if (!val.trim()) return undefined;
           const lower = val.toLowerCase();
@@ -58,8 +63,9 @@ function getBaseSchema(field: FieldConfig): ZodTypeAny {
         }
         return val;
       }, z.boolean().optional());
+      break;
     case "date":
-      return z.preprocess(
+      schema = z.preprocess(
         (val) => {
           if (typeof val === "string") {
             if (!val.trim()) return undefined;
@@ -74,28 +80,21 @@ function getBaseSchema(field: FieldConfig): ZodTypeAny {
           })
           .optional()
       );
+      break;
     case "email":
-      return z.preprocess((val) => {
+      schema = z.preprocess((val) => {
         if (typeof val === "string") {
           if (!val.trim()) return undefined;
           return val.trim();
         }
         return val;
       }, z.string().email().optional());
+      break;
     default:
-      return z.string().optional();
+      schema = z.string().optional();
   }
-}
 
-/**
- * Returns a Zod schema for a field by starting with the base schema,
- * then applying required validations.
- *
- * Note: Custom and regex validations that depend on the entire row are handled separately.
- */
-function getFieldSchema(field: FieldConfig): ZodTypeAny {
-  let schema = getBaseSchema(field);
-
+  // Add required validation if needed
   if (field.columnRequired) {
     if (schema instanceof z.ZodString) {
       schema = schema.min(1, { message: "This field is required" });
@@ -137,7 +136,7 @@ function updateError(
  * validations, regex validations, and table-level unique validations.
  *
  * The `fieldMappings` parameter is used to determine if a given field is
- * actually mapped. If a field isn’t mapped (status Unmapped/ Ignored),
+ * actually mapped. If a field isn't mapped (status Unmapped/ Ignored),
  * unique validations for that field are skipped.
  */
 export async function addErrorsToData(

@@ -78,10 +78,14 @@ export function ReviewStep(props: ReviewStepProps) {
         acc.push({
           id: mapping.id,
           header: ({ column }) => (
-            <div className="w-full pl-2">
+            <div className="pl-2 w-full">
               <DataTableColumnHeader
                 column={column}
-                title={mapping.mappedValue}
+                title={
+                  mapping.status === FieldStatus.Mapped
+                    ? (mapping.displayName ?? mapping.mappedValue)
+                    : mapping.mappedValue
+                }
               />
             </div>
           ),
@@ -278,7 +282,7 @@ export function ReviewStep(props: ReviewStepProps) {
     <TooltipProvider>
       <div className="flex flex-col h-full">
         {/* Top controls: Filter and Delete */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <div className="flex flex-wrap gap-4 justify-between items-center mb-4">
           <div>
             <h2 className="text-2xl font-semibold">Review Your Mapped Data</h2>
             <p className="text-sm text-muted-foreground">
@@ -287,8 +291,8 @@ export function ReviewStep(props: ReviewStepProps) {
               finalizing the import.
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <Label className="flex items-center gap-2">
+          <div className="flex gap-4 items-center">
+            <Label className="flex gap-2 items-center">
               <span>Show rows with errors</span>
               <Switch
                 checked={filterErrors}
@@ -314,7 +318,7 @@ export function ReviewStep(props: ReviewStepProps) {
 
         {/* Table container */}
         <div
-          className="relative grow w-full overflow-auto text-sm border rounded-md scrollbar-thin scrollbar-thumb-muted-foreground/15 scrollbar-track-muted"
+          className="overflow-auto relative w-full text-sm rounded-md border grow scrollbar-thin scrollbar-thumb-muted-foreground/15 scrollbar-track-muted"
           ref={tableContainerRef}
         >
           <table
@@ -367,7 +371,7 @@ export function ReviewStep(props: ReviewStepProps) {
         </div>
 
         {/* Continue button */}
-        <div className="flex items-center justify-between mt-4">
+        <div className="flex justify-between items-center mt-4">
           <div className="text-sm text-muted-foreground">
             Total Rows: {rowData.length}
             {selectedRowIds.length > 0 && (
@@ -379,8 +383,8 @@ export function ReviewStep(props: ReviewStepProps) {
 
           <div className="flex justify-end">
             {isImporting && (
-              <p className="flex items-center gap-2 mr-4 text-sm text-muted-foreground">
-                <Loader className="size-4 animate-spin" /> Processing...
+              <p className="flex gap-2 items-center mr-4 text-sm text-muted-foreground">
+                <Loader className="animate-spin size-4" /> Processing...
               </p>
             )}
             <Button disabled={isImporting} onClick={handleImport}>

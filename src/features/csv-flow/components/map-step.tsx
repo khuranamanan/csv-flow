@@ -186,6 +186,7 @@ function MapStep(props: MapStepProps) {
           status: FieldStatus.Mapped,
           mappedValue: mappingOption,
           type: field?.type || "string",
+          displayName: field?.displayName,
         };
       }
     });
@@ -210,7 +211,7 @@ function MapStep(props: MapStepProps) {
     <div className="flex flex-col h-full">
       <p className="mb-2 text-sm">
         For each CSV column, select how it should be mapped to your
-        application’s fields.
+        application's fields.
       </p>
       <div className="p-2 mb-4 text-xs rounded-lg bg-muted text-muted-foreground">
         <p>
@@ -239,9 +240,9 @@ function MapStep(props: MapStepProps) {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col min-h-0 space-y-6 overflow-x-auto"
+          className="flex overflow-x-auto flex-col space-y-6 min-h-0"
         >
-          <div className="relative w-full overflow-auto text-sm border rounded-md grow scrollbar-thin scrollbar-thumb-muted-foreground/15 scrollbar-track-muted">
+          <div className="overflow-auto relative w-full text-sm rounded-md border grow scrollbar-thin scrollbar-thumb-muted-foreground/15 scrollbar-track-muted">
             <Table>
               <TableHeader className="sticky top-0">
                 <TableRow>
@@ -315,8 +316,8 @@ function MapStep(props: MapStepProps) {
           </div>
           <div className="flex justify-end">
             {processing && (
-              <p className="flex items-center gap-2 mr-4 text-sm text-muted-foreground">
-                <Loader className="size-4 animate-spin" /> Processing...
+              <p className="flex gap-2 items-center mr-4 text-sm text-muted-foreground">
+                <Loader className="animate-spin size-4" /> Processing...
               </p>
             )}
             <Button type="submit" disabled={processing}>
