@@ -17,10 +17,10 @@ import {
 // ---------------------------
 function HeroSection() {
   return (
-    <section className="relative w-full py-12 overflow-hidden md:py-24 lg:py-32 xl:py-48">
+    <section className="relative py-12 w-full md:py-24 lg:py-32 xl:py-48">
       <div className="absolute inset-0 bg-grid-small-white/[0.2] -z-10" />
-      <div className="absolute inset-0 flex items-center justify-center -z-10">
-        <div className="w-3/4 rounded-full h-3/4 bg-primary/5 blur-3xl" />
+      <div className="flex absolute inset-0 justify-center items-center -z-10">
+        <div className="w-3/4 h-3/4 rounded-full blur-3xl bg-primary/5" />
       </div>
       <div className="container relative px-4 md:px-6">
         <div className="grid gap-6 lg:gap-12">
@@ -40,7 +40,7 @@ function HeroSection() {
               <a href="#installation">
                 <Button size="lg" className="rounded-full group">
                   Get Started
-                  <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </a>
               <Link to="/demo">
@@ -50,17 +50,17 @@ function HeroSection() {
               </Link>
             </div>
           </div>
-          <div className="relative overflow-hidden border shadow-2xl rounded-xl border-border/40 backdrop-blur-sm bg-background/30">
+          <div className="relative rounded-xl border shadow-2xl backdrop-blur-sm border-border/40 bg-background/30">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-background/10 -z-10" />
             <img
               src="/hero-img.png"
               alt="CSV Flow interface showing mapped data with error indicators and editable cells"
-              className="object-cover mx-auto overflow-hidden sm:w-full lg:order-last dark:hidden"
+              className="object-cover overflow-hidden mx-auto sm:w-full lg:order-last dark:hidden"
             />
             <img
               src="/hero-img-dark.png"
               alt="CSV Flow interface showing mapped data with error indicators and editable cells"
-              className="hidden object-cover mx-auto overflow-hidden sm:w-full lg:order-last dark:inline"
+              className="hidden object-cover overflow-hidden mx-auto sm:w-full lg:order-last dark:inline"
             />
           </div>
         </div>
@@ -113,11 +113,11 @@ function FeaturesSection() {
   ];
 
   return (
-    <section className="relative w-full py-12 md:py-24 lg:py-32">
+    <section className="relative py-12 w-full md:py-24 lg:py-32">
       <div className="absolute inset-0 bg-grid-small-white/[0.2] -z-10" />
       <div className="container px-4 md:px-6">
-        <div className="flex flex-col items-center justify-center space-y-4 text-center">
-          <div className="inline-flex items-center px-3 py-1 mb-2 text-sm border rounded-full shadow-sm border-border/40 bg-background/95 backdrop-blur-md">
+        <div className="flex flex-col justify-center items-center space-y-4 text-center">
+          <div className="inline-flex items-center px-3 py-1 mb-2 text-sm rounded-full border shadow-sm backdrop-blur-md border-border/40 bg-background/95">
             <span className="font-medium text-primary">Features</span>
           </div>
           <div className="space-y-2">
@@ -130,11 +130,11 @@ function FeaturesSection() {
             </p>
           </div>
         </div>
-        <div className="grid max-w-5xl gap-8 py-12 mx-auto md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-8 py-12 mx-auto max-w-5xl md:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, i) => (
             <div
               key={i}
-              className="flex flex-col items-start p-6 space-y-3 transition-all border shadow-sm rounded-xl border-border/40 backdrop-blur-md bg-background/30 hover:shadow-md"
+              className="flex flex-col items-start p-6 space-y-3 rounded-xl border shadow-sm backdrop-blur-md transition-all border-border/40 bg-background/30 hover:shadow-md"
             >
               <div className="p-3 rounded-full bg-primary/10 text-primary">
                 {feature.icon}
@@ -156,15 +156,15 @@ function InstallationSection() {
   return (
     <section
       id="installation"
-      className="relative w-full py-12 md:py-24 lg:py-32"
+      className="relative py-12 w-full md:py-24 lg:py-32"
     >
       <div className="absolute inset-0 bg-grid-small-white/[0.2] -z-10" />
-      <div className="absolute inset-0 flex items-center justify-center -z-10">
-        <div className="w-1/2 rounded-full h-1/2 bg-primary/5 blur-3xl" />
+      <div className="flex absolute inset-0 justify-center items-center -z-10">
+        <div className="w-1/2 h-1/2 rounded-full blur-3xl bg-primary/5" />
       </div>
       <div className="container px-4 md:px-6">
-        <div className="flex flex-col items-center justify-center space-y-4 text-center">
-          <div className="inline-flex items-center px-3 py-1 mb-2 text-sm border rounded-full shadow-sm border-border/40 bg-background/95 backdrop-blur-md">
+        <div className="flex flex-col justify-center items-center space-y-4 text-center">
+          <div className="inline-flex items-center px-3 py-1 mb-2 text-sm rounded-full border shadow-sm backdrop-blur-md border-border/40 bg-background/95">
             <span className="font-medium text-primary">Installation</span>
           </div>
           <div className="space-y-2">
@@ -176,8 +176,8 @@ function InstallationSection() {
               run the command below to get started:
             </p>
           </div>
-          <div className="w-full max-w-3xl mt-8">
-            <div className="overflow-hidden border shadow-lg rounded-xl border-border/40 backdrop-blur-md bg-background/30">
+          <div className="mt-8 w-full max-w-3xl">
+            <div className="overflow-hidden rounded-xl border shadow-lg backdrop-blur-md border-border/40 bg-background/30">
               <CodeBlock
                 language="bash"
                 code="pnpm dlx shadcn@latest add https://csv-flow.vercel.app/r/csv-flow.json"
@@ -201,12 +201,12 @@ function PlaygroundSection() {
   return (
     <section
       id="playground"
-      className="relative w-full py-12 md:py-24 lg:py-32"
+      className="relative py-12 w-full md:py-24 lg:py-32"
     >
       <div className="absolute inset-0 bg-grid-small-white/[0.2] -z-10" />
       <div className="container px-4 md:px-6">
-        <div className="flex flex-col items-center justify-center space-y-4 text-center">
-          <div className="inline-flex items-center px-3 py-1 mb-2 text-sm border rounded-full shadow-sm border-border/40 bg-background/95 backdrop-blur-md">
+        <div className="flex flex-col justify-center items-center space-y-4 text-center">
+          <div className="inline-flex items-center px-3 py-1 mb-2 text-sm rounded-full border shadow-sm backdrop-blur-md border-border/40 bg-background/95">
             <span className="font-medium text-primary">Interactive Demo</span>
           </div>
           <div className="space-y-2">
@@ -215,7 +215,7 @@ function PlaygroundSection() {
             </h2>
             <div className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed mx-auto">
               <p>With our demo, you can:</p>
-              <ul className="mt-2 text-center list-disc list-inside">
+              <ul className="mt-2 list-disc list-inside text-center">
                 <li>
                   <strong>Import Sample Data:</strong> Open the CSV Flow
                   importer, use a sample CSV file from our public folder, and
@@ -250,7 +250,7 @@ function PlaygroundSection() {
             <Link to="/demo">
               <Button className="rounded-full group">
                 Try the Demo
-                <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
             <Link to="/docs">
@@ -270,14 +270,14 @@ function PlaygroundSection() {
 // ---------------------------
 function OpenSourceSection() {
   return (
-    <section className="relative w-full py-12 md:py-24 lg:py-32">
+    <section className="relative py-12 w-full md:py-24 lg:py-32">
       <div className="absolute inset-0 bg-grid-small-white/[0.2] -z-10" />
-      <div className="absolute inset-0 flex items-center justify-center -z-10">
-        <div className="w-1/2 rounded-full h-1/2 bg-primary/5 blur-3xl" />
+      <div className="flex absolute inset-0 justify-center items-center -z-10">
+        <div className="w-1/2 h-1/2 rounded-full blur-3xl bg-primary/5" />
       </div>
       <div className="container px-4 md:px-6">
-        <div className="flex flex-col items-center justify-center space-y-4 text-center">
-          <div className="inline-flex items-center px-3 py-1 mb-2 text-sm border rounded-full shadow-sm border-border/40 bg-background/95 backdrop-blur-md">
+        <div className="flex flex-col justify-center items-center space-y-4 text-center">
+          <div className="inline-flex items-center px-3 py-1 mb-2 text-sm rounded-full border shadow-sm backdrop-blur-md border-border/40 bg-background/95">
             <span className="font-medium text-primary">Open Source</span>
           </div>
           <div className="space-y-2">
