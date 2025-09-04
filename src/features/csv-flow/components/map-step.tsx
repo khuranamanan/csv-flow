@@ -210,8 +210,7 @@ function MapStep(props: MapStepProps) {
   return (
     <div className="flex flex-col h-full">
       <p className="mb-2 text-sm">
-        For each CSV column, select how it should be mapped to your
-        application's fields.
+        For each CSV column, select the field it should be mapped to.
       </p>
       <div className="p-2 mb-4 text-xs rounded-lg bg-muted text-muted-foreground">
         <p>
