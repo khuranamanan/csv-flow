@@ -13,6 +13,7 @@ export type CustomFieldReturnType = "object" | "json" | "flat";
  *   - **displayName** (optional): A user-friendly name for the field. If omitted, `columnName` is used.
  *   - **columnRequired**: A boolean indicating whether the field is mandatory.
  *   - **type**: The expected data type for the field. One of "string", "number", "boolean", "email", or "date".
+ *   - **example** (optional): An example value to include in the CSV template download.
  *   - **validations** (optional): An array of validations to apply. Validations can be of the following types:
  *     - **UniqueValidation**: `{ rule: "unique", allowEmpty?: boolean, errorMessage?: string, level?: "info" | "warning" | "error" }`
  *     - **RegexValidation**: `{ rule: "regex", value: string, flags?: string, errorMessage: string, level?: "info" | "warning" | "error" }`
@@ -32,6 +33,7 @@ export type CustomFieldReturnType = "object" | "json" | "flat";
  * - "object": (default) Custom fields are returned as an object attached to the main data (e.g. under a `customFields` key).
  * - "json": Custom fields are returned as a JSON string.
  * - "flat": Custom fields are merged directly into the top-level of the final object.
+ * @property {boolean} [showTemplateDownload] - When true, shows the download template button in the upload step. Default is true.
  * @property onImport - Callback function invoked when the import operation is triggered.
  *                      It receives an array of objects, where each object represents a row of imported CSV data.
  *
@@ -52,6 +54,7 @@ export type CustomFieldReturnType = "object" | "json" | "flat";
  *         fields={someFieldConfigs}
  *         maxRows={500}         // Optional: override default max rows (default is 1000)
  *         maxFileSize={1024 * 1024} // Optional: override default max file size (default is 2MB)
+ *         showTemplateDownload={true} // Optional: show download template button (default is true)
  *       />
  *     </>
  *   );
@@ -65,6 +68,7 @@ export type CsvFlowProps = {
   maxFileSize?: number;
   enableCustomFields?: boolean;
   customFieldReturnType?: CustomFieldReturnType;
+  showTemplateDownload?: boolean;
   onImport: (data: Record<string, unknown>[]) => void;
 };
 
@@ -85,6 +89,7 @@ type FieldTypes = "string" | "number" | "boolean" | "email" | "date";
  * @property {boolean} columnRequired - Indicates whether the field is mandatory.
  * @property {"string" | "number" | "email" | "date"} type - The expected data type for the field.
  * @property {Validation[]} [validations] - An array of additional validations to apply to this field.
+ * @property {unknown} [example] - An optional example value to include in the CSV template.
  *
  * @example
  * const fieldConfig: FieldConfig = {
@@ -92,6 +97,7 @@ type FieldTypes = "string" | "number" | "boolean" | "email" | "date";
  *   displayName: "Email Address",
  *   required: true,
  *   type: "email",
+ *   example: "john.doe@example.com",
  *   validations: [
  *     {
  *       rule: "regex",
@@ -108,6 +114,7 @@ export interface FieldConfig {
   columnRequired: boolean; // Whether the field is mandatory
   type: FieldTypes;
   validations?: Validation[];
+  example?: unknown; // Example value for CSV template
 }
 
 /**

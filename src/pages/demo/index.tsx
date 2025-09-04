@@ -13,6 +13,7 @@ const csvFlowFieldsConfig: FieldConfig[] = [
     displayName: "ID",
     columnRequired: true,
     type: "number",
+    example: 1,
     validations: [
       {
         rule: "custom",
@@ -27,6 +28,7 @@ const csvFlowFieldsConfig: FieldConfig[] = [
     displayName: "First Name",
     columnRequired: true,
     type: "string",
+    example: "John",
     validations: [
       {
         rule: "regex",
@@ -41,6 +43,7 @@ const csvFlowFieldsConfig: FieldConfig[] = [
     displayName: "Last Name",
     columnRequired: true,
     type: "string",
+    example: "Doe",
     validations: [
       {
         rule: "regex",
@@ -56,6 +59,7 @@ const csvFlowFieldsConfig: FieldConfig[] = [
     displayName: "Email",
     columnRequired: true,
     type: "email",
+    example: "john.doe@example.com",
     validations: [
       {
         rule: "unique",
@@ -70,6 +74,7 @@ const csvFlowFieldsConfig: FieldConfig[] = [
     displayName: "Phone",
     columnRequired: false,
     type: "string",
+    example: "+1234567890",
     validations: [
       {
         rule: "unique",
@@ -100,18 +105,21 @@ const csvFlowFieldsConfig: FieldConfig[] = [
     displayName: "Date of Birth",
     columnRequired: true,
     type: "date",
+    example: new Date("1990-01-15"),
   },
   {
     columnName: "isGraduate",
     displayName: "Has Graduated",
     columnRequired: true,
     type: "boolean",
+    example: true,
   },
   {
     columnName: "city",
     displayName: "City",
     columnRequired: false,
     type: "string",
+    example: "New York",
     validations: [
       {
         rule: "custom",
@@ -129,6 +137,7 @@ const csvFlowFieldsConfig: FieldConfig[] = [
     displayName: "Country",
     columnRequired: false,
     type: "string",
+    example: "United States",
   },
 ];
 
@@ -155,6 +164,7 @@ export function DemoPage() {
     maxFileSize: 2097152, // 2MB
     enableCustomFields: true,
     customFieldReturnType: "object",
+    showTemplateDownload: true, // Enable template download button
   };
 
   // Function to download sample CSV data
@@ -169,12 +179,12 @@ export function DemoPage() {
   };
 
   return (
-    <div className="container max-w-full px-4 py-6 mx-auto space-y-8 overflow-x-hidden">
+    <div className="container overflow-x-hidden px-4 py-6 mx-auto space-y-8 max-w-full">
       <h1 className="text-3xl font-bold">CSV Flow Demo</h1>
       <div className="grid gap-8 md:grid-cols-2">
         {/* Left Column: Demo Area */}
-        <div className="flex flex-col w-full min-w-0 space-y-6">
-          <div className="min-w-0 p-4 border rounded shadow-sm sm:p-6 bg-background/30">
+        <div className="flex flex-col space-y-6 w-full min-w-0">
+          <div className="p-4 min-w-0 rounded border shadow-sm sm:p-6 bg-background/30">
             <h2 className="mb-4 text-2xl font-bold">Demo</h2>
             <p className="mb-4 text-muted-foreground">
               Click "Open CSV Flow" to open the importer. After importing, the
@@ -190,7 +200,7 @@ export function DemoPage() {
             <CsvFlow {...csvFlowProps} />
           </div>
 
-          <div className="min-w-0 p-4 border rounded shadow-sm sm:p-6 bg-background/30">
+          <div className="p-4 min-w-0 rounded border shadow-sm sm:p-6 bg-background/30">
             <h2 className="mb-4 text-2xl font-bold">Imported Data</h2>
             {importedData.length === 0 ? (
               <p className="text-muted-foreground">No data imported yet.</p>
@@ -203,7 +213,7 @@ export function DemoPage() {
                       ? githubDarkTheme
                       : githubLightTheme
                   }
-                  className="w-full p-4 break-words"
+                  className="p-4 w-full break-words"
                   collapsed
                   shortenTextAfterLength={10}
                 />
@@ -213,12 +223,12 @@ export function DemoPage() {
         </div>
 
         {/* Right Column: Configuration & Explanation */}
-        <div className="w-full min-w-0 p-4 border rounded shadow-sm sm:p-6 bg-background/30">
+        <div className="p-4 w-full min-w-0 rounded border shadow-sm sm:p-6 bg-background/30">
           <h2 className="mb-2 text-2xl font-bold">Configuration</h2>
           <p className="mb-4 text-muted-foreground">
             This CSV Flow configuration defines the following fields:
           </p>
-          <ul className="w-full mb-4 ml-6 list-disc text-muted-foregroup-enabled:">
+          <ul className="mb-4 ml-6 w-full list-disc text-muted-foregroup-enabled:">
             <li>
               <strong>ID:</strong> Required number with a custom validation
               ensuring a positive value.

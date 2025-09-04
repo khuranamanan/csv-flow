@@ -36,6 +36,7 @@ function CsvFlow(props: CsvFlowProps) {
     maxFileSize = 1024 * 1024 * 2,
     enableCustomFields = false,
     customFieldReturnType = "object",
+    showTemplateDownload = true,
     onImport,
   } = props;
 
@@ -52,6 +53,7 @@ function CsvFlow(props: CsvFlowProps) {
             maxRows={maxRows}
             setStep={setCurrentStep}
             maxFileSize={maxFileSize}
+            showTemplateDownload={showTemplateDownload}
           />
         );
       case StepItems.Map:
@@ -92,6 +94,7 @@ function CsvFlow(props: CsvFlowProps) {
     maxFileSize,
     customFieldReturnType,
     enableCustomFields,
+    showTemplateDownload,
     onImport,
     setOpen,
   ]);

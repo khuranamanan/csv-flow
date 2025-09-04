@@ -196,7 +196,7 @@ export function FileUploader(props: FileUploaderProps) {
   return (
     <div
       className={cn(
-        "relative flex flex-col gap-6 overflow-hidden",
+        "flex overflow-hidden relative flex-col gap-6",
         containerClassName
       )}
     >
@@ -222,8 +222,8 @@ export function FileUploader(props: FileUploaderProps) {
           >
             <input {...getInputProps()} />
             {isDragActive ? (
-              <div className="flex flex-col items-center justify-center gap-4 sm:px-5">
-                <div className="p-3 border border-dashed rounded-full">
+              <div className="flex flex-col gap-4 justify-center items-center sm:px-5">
+                <div className="p-3 rounded-full border border-dashed">
                   <Upload
                     className="size-7 text-muted-foreground"
                     aria-hidden="true"
@@ -234,8 +234,8 @@ export function FileUploader(props: FileUploaderProps) {
                 </p>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center gap-4 sm:px-5">
-                <div className="p-3 border border-dashed rounded-full">
+              <div className="flex flex-col gap-4 justify-center items-center sm:px-5">
+                <div className="p-3 rounded-full border border-dashed">
                   <Upload
                     className="size-7 text-muted-foreground"
                     aria-hidden="true"
@@ -263,7 +263,7 @@ export function FileUploader(props: FileUploaderProps) {
 
       {files?.length ? (
         <ScrollArea className="w-full h-fit">
-          <div className="flex flex-col gap-4 border max-h-48">
+          <div className="flex flex-col gap-4 max-h-48 border">
             {files?.map((file, index) => (
               <FileCard
                 key={index}
@@ -290,7 +290,7 @@ function FileCard({ file, progress, onRemove }: FileCardProps) {
     <div className="relative flex items-center gap-2.5 p-2 rounded">
       <div className="flex flex-1 gap-2.5">
         {isFileWithPreview(file) ? <FilePreview file={file} /> : null}
-        <div className="flex flex-col w-full gap-2">
+        <div className="flex flex-col gap-2 w-full">
           <div className="flex flex-col gap-px">
             <p className="text-sm font-medium line-clamp-1 text-foreground/80">
               {file.name}
@@ -302,7 +302,7 @@ function FileCard({ file, progress, onRemove }: FileCardProps) {
           {progress ? <Progress value={progress} /> : null}
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex gap-2 items-center">
         <Button
           type="button"
           variant="outline"
